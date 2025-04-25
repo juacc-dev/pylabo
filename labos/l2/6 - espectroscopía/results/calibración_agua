@@ -1,0 +1,7 @@
+pico: x = 387
+valle: x = 412
+
+pico: lambda = 449
+valle: lambda = 485
+
+ratio = 1.44
