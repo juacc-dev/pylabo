@@ -1,7 +1,8 @@
 from . import visa
 import numpy as np
 
-ACCURACY = 0.03
+X_ACCURACY = 50.0 / 10 ** 6
+Y_ACCURACY = 0.03
 DIVISIONS = 10
 SCREEN_HEIGHT = 255
 
@@ -47,69 +48,39 @@ class Osciloscopio(visa.Instrument):
         return
 
 
-    def vert(
-        self,
-        scale=None,
-        pos=None,
-        ch=1
-    ):
+    def y_scale(self, ch, scale=None):
         """
-        Ejemplos de `scale` y `pos`:
-            2E-3
-            5E-3
-            10E-3
-            20E-3
-            50E-3
-            100E-3
-            200E-3
-            500E-3
-            1E0
-            2E0
-            5E0
+        Ejemplos de `scale`:
+            2E-3 5E-3 10E-3 20E-3 50E-3 100E-3 200E-3 500E-3 1E0 2E0 5E0
         """
         if scale is not None:
             self.write(f"CH{ch}:SCAle {scale}")
 
+        return self.query(f"CH{ch}:SCAle?")
+
+    def y0(self, ch, pos=None):
         if pos is not None:
             self.write(f"CH{ch}:POSition {pos}")
 
-        if scale is None and pos is None:
-            return self.query(f"CH{ch}?")
+        return self.query(f"CH{ch}:POSition?")
 
-
-    def horiz(
-        self,
-        scale=None,
-        pos=None,
-    ):
+    # Check this two methods
+    def x_scale(self, scale=None):
         if scale is not None:
             self.write(f"HORizontal:SCAle {scale}")
 
+        return self.query("HORizontal:SCAle?")
+
+    def x0(self, pos=None):
         if pos is not None:
             self.write(f"HORizontal:POSition {pos}")
 
-        if scale is None and pos is None:
-            return self.query("HORizontal?")
-
-    def update(self):
-        """
-        Query configuration and update class members.
-        """
-        self.x0, self.dx = self.query(
-            "WFMPre:XZEro;XINcr?"
-        )
-
-        for ch in [1, 2]:
-            self.y0[ch], self.y_scale[ch] = self.query(
-                f"WFMPre:YZEro;:CH{ch}:SCAle?",
-                ascii=True,
-                separator=';'
-            )
+        return self.query("HORizontal:POSition?")
 
 
     def curve(
         self,
-        ch: int = 0,
+        chs: int = 0,
     ):
         """
         ch=0 means both channels, 1 and 2.
@@ -117,16 +88,16 @@ class Osciloscopio(visa.Instrument):
         ys = []
         sigma_y = []
 
-        channels = [1, 2] if ch == 0 else [1] if ch == 1 else [2]
+        channels = [1, 2] if chs == 0 else [1] if chs == 1 else [2]
 
-        for c in channels:
+        for ch in channels:
             # Set data source, in this case a channel
-            self.write(f"DATa:SOURce CH{ch}")
+            self.write(f"DATa:SOURce CH{chs}")
 
-            y_units, vertical_offset = self.query(
-                "WFMPre:YMUlt;YOFf?",
-                ascii=True,
-                separator=';'
+            y0, y_units, vertical_offset = self.query(
+                "WFMPre:YZEro;YMUlt;YOFf?"
+                # ascii=True,
+                # separator=';'
             )
 
             # Retrieve curve data
@@ -142,13 +113,17 @@ class Osciloscopio(visa.Instrument):
             # vertical_offset: adjust data for converting units.
             # y_units: converting factor, something like volts/pixel
             # (technically, in the manual says y_units per digitizer levels)
-            y = self.y0[c] + (data - vertical_offset) * y_units
+            y = y0 + (data - vertical_offset) * y_units
 
             ys.append(y)
 
-            sensitivity = self.y_scale * DIVISIONS / SCREEN_HEIGHT
-            sigma_y.append(ACCURACY * (y - self.y0[c]) + sensitivity)
+            sensitivity = self.y_scale(ch) * DIVISIONS / SCREEN_HEIGHT
 
-        t = np.arange(self.x0, self.x0 + y.size, self.dx)
+            sigma_y.append(Y_ACCURACY * (y - y0) + sensitivity)
+
+
+        x0 = self.query("WFMPre:XZEro?")
+
+        t = np.arange(x0, x0 + ys[0].size, self.dx)
 
         return t, np.array(ys), np.array(sigma_y)
