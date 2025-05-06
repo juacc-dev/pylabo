@@ -1,7 +1,7 @@
 import sys
 import getopt
 import logging
-from common import data, plot, fit
+from pylabo import data, plot, fit
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +16,9 @@ def parse(argv: list[str]) -> list[str]:
 
     for opt, arg in opts:
         match opt:
-            # Show plots
+            # Don't show plots
             case "-p":
-                plot.opt_show_plots = True
+                plot.opts.show = False
 
             # Verbose
             case "-v":
@@ -38,7 +38,7 @@ def parse(argv: list[str]) -> list[str]:
 
             # Show results
             case "-r":
-                fit.utils.opt_show_result = True
+                fit._helper.opt_show_result = True
 
             # Default
             case _:
