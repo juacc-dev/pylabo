@@ -43,10 +43,10 @@ def generate(
     return df
 
 
-def load_data(
-    file: str = None,       # Local file name (in the data/ directory)
-    wsname: str = None,     # Worksheet name
-    cellrange: str = None,  # e.g. "A2:C41"
+def load(
+    filename: str,          # Local file name
+    # wsname: str = None,     # Worksheet name
+    # cellrange: str = None,  # e.g. "A2:C41"
     **kwargs
 ) -> pd.DataFrame:
     """
@@ -57,51 +57,51 @@ def load_data(
     """
 
     # Path and filename of the calling script
-    path, name = utils.get_caller_name()
+    # path, name = utils.get_caller_name()
 
     df: pd.DataFrame
 
     # If searching for a local file
-    if file is not None:
-        csv_file = path / DATA_DIR / file
-        logger.info(f"Searching for local data file '{csv_file}'.")
+    # if filename is not None:
+        # csv_file = path / DATA_DIR / file
+
+    file = Path(filename)
 
     # If there is no existing dataframe (or chose to regenerate), create it
-    elif not csv_file.is_file() or opt_regen_sheets:
-        stem = name + ".csv"
+    if not file.is_file():
+        # stem = name + ".csv"
 
         # Where the dataframe should be stored
-        csv_file = path / DATA_DIR / stem
+        # csv_file = path / DATA_DIR / stem
 
-        if not opt_regen_sheets:
-            logger.warning(f"Could not find '{csv_file}'.")
+        logger.error(f"Could not find '{file}'.")
 
-        else:
-            logger.info(
-                f"Found file for '{
-                    stem}'. Using gspread anyways since '-R' was passed."
-            )
+        # else:
+        #     logger.info(
+        #         f"Found file for '{
+        #             stem}'. Using gspread anyways since '-R' was passed."
+        #     )
 
         # Create dataframe
-        df = generate(
-            path,
-            name if not wsname else wsname,
-            cellrange
-        )
+        # df = generate(
+        #     path,
+        #     name if not wsname else wsname,
+        #     cellrange
+        # )
 
         # Save file. `index=False` to disable extra column.
-        df.to_csv(
-            csv_file,
-            index=False
-        )
+        # df.to_csv(
+        #     csv_file,
+        #     index=False
+        # )
 
     # This can't be removed when generating the dataframe,
     # it does not work for some reason.
-    logger.info(f"Reading '{csv_file}'.")
-    df = pd.read_csv(csv_file, **kwargs)
+    logger.info(f"Reading '{file}'.")
+    df = pd.read_csv(file, **kwargs)
 
     if opt_show_dataframe:
-        print(f"Showing '{name}' dataframe:")
+        print(f"Showing dataframe for file '{file}':")
         print(df.to_string())
 
     return df
@@ -144,8 +144,3 @@ def save(
     # Upload to Google Sheets
     # if sheet is not None:
     #     logger.warning("Uploading to Google Sheets.")
-
-
-# def read_result(
-#     name
-# ) -> pd.DataFrame:

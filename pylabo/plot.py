@@ -4,23 +4,57 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+from pylabo.utils import set_if_none
 from pylabo._plot import _typing
 from pylabo._plot._helper import data_name, get_units, plot_errorbar, plot_smooth
 
 # Types
 
-PLOTS_DIR = "plots"
-EXT = "png"
-FIGSIZE = (8, 6)
-DPI = 100
-FONT_SIZE = 10
-FMT = "o"
+DEF_FONT_FAMILY = ""
+DEF_FONT_SIZE = 10
+DEF_DIR = "plots"
+DEF_EXT = "png"
+DEF_FIGSIZE = (8, 6)
+DEF_DPI = 100
+DEF_FMT = "o"
+DEF_SHOW = True
 
 logger = logging.getLogger(__name__)
 
-opt_show_plots = True
+# opt_show_plots = True
 
-plt.rcParams.update({"font.size": FONT_SIZE})
+
+def opts(**kwargs):
+    for k, v in kwargs.items():
+        match k:
+            case "font_size":
+                opts.font_size = v
+                plt.rcParams.update({"font.size": v})
+            case "dir":
+                opts.dir = v
+            case "ext":
+                opts.ext = v
+            case "figsize":
+                opts.figsize = v
+            case "dpi":
+                opts.dpi = v
+            case "fmt":
+                opts.fmt = v
+            case "show":
+                opts.show = v
+            case _:
+                logger.error("Invalid option.")
+
+    return
+opts.font_family = DEF_FONT_FAMILY,
+opts.font_size = DEF_FONT_SIZE,
+opts.dir = DEF_DIR,
+opts.ext = DEF_EXT,
+opts.figsize = DEF_FIGSIZE,
+opts.dpi = DEF_DPI,
+opts.fmt = DEF_FMT,
+opts.show = DEF_SHOW,
+
 
 plot_functions = {
     "errorbar": plot_errorbar,
@@ -37,19 +71,19 @@ def save(
     if append is not None:
         filename += f"-{append}"
 
-    filename += f".{EXT}"
+    filename += f".{opts.ext}"
 
-    path = Path(PLOTS_DIR) / filename
+    path = Path(opts.dir) / filename
 
     logger.info(f"Saving figure at '{path}'.")
 
-    Path(PLOTS_DIR).mkdir(parents=True, exist_ok=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
 
     plt.savefig(path, **kwargs)
 
 
 def show():
-    if opt_show_plots is False:
+    if opts.show is False:
         return
 
     plt.tight_layout()
@@ -64,9 +98,8 @@ def data(
     label: str | list[str] = None,
     xlabel: str = None,
     ylabel: str = None,
-    fmt=FMT,
-    figsize=FIGSIZE,
-    # noshow=False,           # don't show the plot
+    fmt=None,
+    figsize=None,
     saveto: str = None,    # custom save path
     separate_rows=False,    # use a different row for each plot if provided
     plot_method: str = None,
@@ -82,6 +115,9 @@ def data(
     the errors in `x_data` and `y_data`, i.e. `(x_err, y_err)`. If `y_data` is a
     list of y_datas, y_err shuold be a list as well.
     """
+
+    fmt = set_if_none(fmt, opts.fmt)
+    figsize = set_if_none(figsize, opts.figsize)
 
     # There may be multiple y_data
     multiplot = False if not isinstance(y_data, list) else len(y_data)
@@ -169,8 +205,8 @@ def data_and_fit(
     y_data: _typing.Any,
     error: _typing.Any | tuple[_typing.Any],
     fit_fun: fit.funs.EvalFunction,
-    fmt=FMT,
-    figsize=FIGSIZE,
+    fmt=None,
+    figsize=None,
     datalabel: str = "Mediciones",
     fitlabel: str = "Ajuste",
     xlabel: str = None,
@@ -184,7 +220,12 @@ def data_and_fit(
     """
     Plot data, fit and residue. Works similar to `plot.data()` except that
     `y_data` may only contain a single array of data.
+
+    Shows plots.
     """
+
+    fmt = set_if_none(fmt, opts.fmt)
+    figsize = set_if_none(figsize, opts.figsize)
 
     if units is not None:
         if ylabel is None:
@@ -203,6 +244,7 @@ def data_and_fit(
         xlabel=xlabel,
         ylabel=ylabel,
         fmt=fmt,
+        figsize=figsize,
         **kwargs,
     )
 
@@ -213,7 +255,7 @@ def data_and_fit(
     # else, create a higher resolution y_fit
     else:
         # Number of points depends on plot width
-        n_points = FIGSIZE[0] * DPI
+        n_points = figsize[0] * opts.dpi
         logger.info(f"Using {n_points} points to plot fit.")
 
         x_fit = np.linspace(min(x_data), max(x_data), n_points)
@@ -233,13 +275,15 @@ def data_and_fit(
     if fitlabel is not None:
         ax.legend()
 
-    if not noshow:
+    if saveto is not None:
         save(saveto, append="fit")
+
+    show()
 
     # Plot residue separately
 
     fig_res, ax_res = plt.subplots(
-        figsize=FIGSIZE
+        figsize=figsize
     )
 
     yerr = error[1] if isinstance(error, tuple) else error
@@ -269,7 +313,10 @@ def data_and_fit(
     ax_res.axhline(0, color="black")
 
     # Append '-residue' to path to save figure
-    save(saveto, append="residue")
+    if saveto is not None:
+        save(saveto, append="residue")
+
+    show()
 
     return fig, ax
 
@@ -281,15 +328,17 @@ def data_polar(
     terr=None,
     title: str = None,
     label: str = None,
-    figsize=FIGSIZE,
+    figsize=None,
+    fmt=None,
     rorigin=None,
     rlabel=None,
-    fmt=FMT,
     **kwargs
 ):
     """
     Plot data in polar coordinates.
     """
+    fmt = set_if_none(fmt, opts.fmt)
+    figsize = set_if_none(figsize, opts.figsize)
 
     fig, ax = plt.subplots(
         figsize=figsize,

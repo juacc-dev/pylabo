@@ -1,23 +1,21 @@
-import inspect
-import os
-from pathlib import Path
+# def get_caller_name():
+#     # Get the current stack frame
+#     stack = inspect.stack()
 
+#     # Find stack frame for the calling script
+#     for frame in stack:
+#         frame_path = os.path.abspath(inspect.getframeinfo(frame[0]).filename)
 
-def get_caller_name():
-    # Get the current stack frame
-    stack = inspect.stack()
+#         if frame_path.find("common") == -1:
+#             path = Path(frame_path)
+#             parent = path.parent
 
-    # Find stack frame for the calling script
-    for frame in stack:
-        frame_path = os.path.abspath(inspect.getframeinfo(frame[0]).filename)
+#             if path.parent.name == "src":
+#                 parent = parent.parent
 
-        if frame_path.find("common") == -1:
-            path = Path(frame_path)
-            parent = path.parent
+#             return (parent, path.stem)
 
-            if path.parent.name == "src":
-                parent = parent.parent
+#     return None
 
-            return (parent, path.stem)
-
-    return None
+def set_if_none(value, default):
+    return default if value is None else value
