@@ -8,3 +8,5 @@ PyQt6
 numpy
 pandas
 scipy
+pyvisa
+pyvisa-py
