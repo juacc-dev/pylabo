@@ -1,18 +1,17 @@
 from scipy.optimize import curve_fit
 import numpy as np
-from . import f
-from pathlib import Path
-from common import data
 import pprint
-import logging
 import sys
+import logging
 
-opt_show_result = False
+from . import function
+
 logger = logging.getLogger(__name__)
 
+opt_show_result = False
 
 def find(
-    func: f.Function,
+    func: function.Function,
     data_x,
     data_y,
     p0=None,
@@ -61,7 +60,7 @@ def r2(
 
 
 def result(
-    func: f.Function,
+    func: function.Function,
     p_opt,
     p_err,
     chi,
@@ -91,67 +90,3 @@ def result(
         pprint.pp(res)
 
     return [res]
-
-
-def fitnsave(
-    func: f.Function,
-    x_data,
-    y_data,
-    saveto: Path | str = None,
-    p0=None,
-    yerr=None,
-    nosave=False
-) -> f.EvalFunction:
-    """
-    Fit a function to data and save results.
-    Returns y_fit and (param_opt, param_err)
-    """
-
-    if not (func is f.linear or func is f.linear_homog) and p0 is None:
-        logger.warning("Passing no initial parameters for non linear function")
-
-    p_opt, p_err = find(
-        func,
-        x_data,
-        y_data,
-        p0=p0,
-        yerr=yerr
-    )
-
-    y_fit = func.f(x_data, *p_opt)
-
-    residue = y_fit - y_data
-
-    # Chi squared test is only relevant for lineal fits
-    chi_sq_red = chi2_r(
-        residue,
-        yerr,
-        len(residue),
-        len(p_opt)
-    ) if func is f.linear or func is f.linear_homog else None
-
-    # R^2 test
-    r_sq = r2(y_data, residue)
-
-    fit_func = f.EvalFunction(
-        func,
-        p_opt,
-        p_err,
-        residue,
-        r_sq,
-        chi_sq_red
-    )
-
-    if not nosave:
-        res = result(
-            func,
-            p_opt,
-            p_err,
-            chi_sq_red,
-            r_sq
-        )
-
-        # Save result to disk
-        data.save(res, filename=saveto)
-
-    return fit_func

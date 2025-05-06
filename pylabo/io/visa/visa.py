@@ -1,5 +1,7 @@
 # Information about SCPI:
 # https://en.wikipedia.org/wiki/Standard_Commands_for_Programmable_Instruments
+# SCPI Volume 1: Syntax and style (1999):
+# https://www.ivifoundation.org/downloads/SCPI/scpi-99.pdf
 
 # User guide for PyVISA:
 # https://pyvisa.readthedocs.io/en/latest/introduction/index.html

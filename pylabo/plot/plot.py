@@ -1,15 +1,13 @@
-from common import utils, fit
+from pylabo import utils, fit
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Types
-from pandas.core.series import Series
-from matplotlib.figure import Figure
-from typing import Any
-from pathlib import Path
+from . import _typing
+from . _utils import data_name, get_units
+from . _helper import plot_errorbar, plot_smooth
 
-ArrayLike = np._typing.ArrayLike
+# Types
 
 PLOTS_DIR = "plots"
 DEFAULT_EXT = "png"
@@ -24,9 +22,13 @@ opt_show_plots = False
 
 plt.rcParams.update({"font.size": FONT_SIZE})
 
+plot_functions = {
+    "errorbar": plot_errorbar,
+    "smooth": plot_smooth,
+}
 
 def save(
-    filename: Path = None,
+    filename: _typing.Path = None,
     append: str = None,
     **kwargs
 ):
@@ -56,114 +58,24 @@ def save(
     plt.close()
 
 
-def get_units(label: str) -> str:
-    """
-    Extract units from a string.
-    If `label` is "Weight [Kg]", the units are "[Kg]".
-    """
-
-    if label is None:
-        return ""
-
-    # Units are always at the end of a string
-    units = label.split(" ")[-1]
-
-    # Units are enclosed by "[]"
-    if units[0] == '[' and units[-1] == ']':
-        return units
-
-    else:
-        return ""
-
-
-def _data_name(data) -> str | None:
-    if isinstance(data, Series):
-        return data.name
-
-    else:
-        logger.warning("Label not specified")
-        return None
-
-
-def _plot_errorbar(
-    ax,
-    x_data, y_data,
-    xerr, yerr,
-    fmt, label, xlabel, ylabel
-):
-
-    # Simple plot
-    ax.errorbar(
-        x_data,
-        y_data,
-        xerr=xerr,
-        yerr=yerr,
-        fmt=fmt,
-        label=label
-    )
-
-    ax.set(xlabel=xlabel if xlabel is not None else _data_name(x_data))
-    ax.set(ylabel=ylabel if ylabel is not None else _data_name(y_data))
-
-    ax.grid(True)
-
-    if label is not None:
-        ax.legend()
-
-
-def _plot_smooth(
-    ax,
-    x_data, y_data,
-    xerr, yerr,
-    fmt, label, xlabel, ylabel
-):
-    # Simple plot
-    ax.plot(
-        x_data,
-        y_data,
-        label=label
-    )
-
-    ax.fill_between(
-        x_data,
-        y_data - yerr,
-        y_data + yerr,
-        color="green", alpha=0.2,
-        label="Error"
-    )
-
-    ax.set(xlabel=xlabel if xlabel is not None else _data_name(x_data))
-    ax.set(ylabel=ylabel if ylabel is not None else _data_name(y_data))
-
-    ax.grid(True)
-
-    if label is not None:
-        ax.legend()
-
-
-plot_functions = {
-    "errorbar": _plot_errorbar,
-    "smooth": _plot_smooth,
-}
-
 
 def data(
-    x_data: Any,
-    y_data: Any | list[Any],
-    error: Any | tuple[Any] = 0,
+    x_data: _typing.Any,
+    y_data: _typing.Any | list[_typing.Any],
+    error: _typing.Any | tuple[_typing.Any] = 0,
     label: str | list[str] = None,
     xlabel: str = None,
     ylabel: str = None,
     fmt=DEFAULT_FMT,
     figsize=DEFAULT_FIGSIZE,
     noshow=False,           # don't show the plot
-    saveto: Path = None,    # custom save path
+    saveto: _typing.Path = None,    # custom save path
     separate_rows=False,    # use a different row for each plot if provided
     plot_method: str = None,
-    xlim: tuple[Any] = None,
-    ylim: tuple[Any] = None,
+    xlim: tuple[_typing.Any] = None,
+    ylim: tuple[_typing.Any] = None,
     **kwargs
-) -> tuple[Figure, Any]:
+) -> tuple[_typing.Figure, _typing.Any]:
     """
     Plot data with errors. Accepts multiple `y_data` asociated with the same
     `x_data` (i.e. multiple sets of data), if that is the case, either all sets
@@ -256,9 +168,9 @@ def data(
 
 
 def data_and_fit(
-    x_data: Any,
-    y_data: Any,
-    error: Any | tuple[Any],
+    x_data: _typing._typing.Any,
+    y_data: _typing._typing.Any,
+    error: _typing._typing.Any | tuple[_typing._typing.Any],
     fit_func: fit.f.EvalFunction,
     fmt=DEFAULT_FMT,
     figsize=DEFAULT_FIGSIZE,
@@ -269,7 +181,7 @@ def data_and_fit(
     units: float = None,
     residue_units: tuple[float, str] = None,
     noshow=False,
-    saveto: Path = None,
+    saveto: _typing.Path = None,
     **kwargs
 ):
     """
@@ -282,8 +194,8 @@ def data_and_fit(
             logger.warning("Did not change ylabel to accomodate for units.")
         y_data *= units
 
-    xlabel = xlabel if xlabel is not None else _data_name(x_data)
-    ylabel = ylabel if ylabel is not None else _data_name(y_data)
+    xlabel = xlabel if xlabel is not None else data_name(x_data)
+    ylabel = ylabel if ylabel is not None else data_name(y_data)
 
     fig, ax = data(
         x_data,

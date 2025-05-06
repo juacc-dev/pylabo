@@ -1,1 +1,1 @@
-from common.fit import f, utils
+from . import function, func_fit

@@ -1,12 +1,12 @@
 from pathlib import Path
 import pandas as pd
 import logging
-from common import utils
+from pylabo import utils
 
-# data
 logger = logging.getLogger(__name__)
 
 DATA_DIR = "data"
+RESULTS_DIR = "results"
 
 opt_regen_sheets = False
 opt_show_dataframe = False
@@ -43,7 +43,7 @@ def generate(
     return df
 
 
-def find(
+def load_data(
     file: str = None,       # Local file name (in the data/ directory)
     wsname: str = None,     # Worksheet name
     cellrange: str = None,  # e.g. "A2:C41"
@@ -123,17 +123,16 @@ def save(
     if filename is None:
         path, name = utils.get_caller_name()
 
-        filename = path / f"results/{name}.csv"
+        filename = path / f"{RESULTS_DIR}/{name}.csv"
 
-    if append is not None:
-        new_name = f"{filename.stem}-{append}"
+    # if append is not None:
+    #     new_name = f"{filename.stem}-{append}"
+    #     filename = filename.parent / f"{new_name}.csv"
 
-        filename = filename.parent / f"{new_name}.csv"
-
-    logger.info(f"Saving file '{filename}")
+    logger.info(f"Saving results to '{filename}'")
 
     if opt_show_dataframe:
-        print(f"Showing '{filename}' results dataframe:")
+        print(f"'{filename}' results dataframe:")
         print(df)
 
     # Save
@@ -145,8 +144,6 @@ def save(
     # Upload to Google Sheets
     # if sheet is not None:
     #     logger.warning("Uploading to Google Sheets.")
-
-    #     from common import sheets
 
 
 # def read_result(

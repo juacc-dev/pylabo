@@ -8,7 +8,12 @@ from pathlib import Path
 # sheets
 logger = logging.getLogger(__name__)
 
-CREDS_PATH = Path("~/.config/gspread/labo2_SA.json").expanduser()
+# CREDS_PATH = Path("~/.config/gspread/labo2_SA.json").expanduser()
+CREDS_PATH = None
+
+def setup(service_account_path: str):
+    global CREDS_PATH
+    CREDS_PATH = Path(service_account_path).expanduser
 
 
 def open_sheet(path: Path) -> gspread.Spreadsheet:
