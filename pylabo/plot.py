@@ -167,9 +167,9 @@ def data(
 
 
 def data_and_fit(
-    x_data: _typing._typing.Any,
-    y_data: _typing._typing.Any,
-    error: _typing._typing.Any | tuple[_typing._typing.Any],
+    x_data: _typing.Any,
+    y_data: _typing.Any,
+    error: _typing.Any | tuple[_typing.Any],
     fit_fun: fit.funs.EvalFunction,
     fmt=DEFAULT_FMT,
     figsize=DEFAULT_FIGSIZE,
