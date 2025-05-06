@@ -2,6 +2,7 @@ from pylabo import utils, fit
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 from pylabo._plot import _typing
 from pylabo._plot._helper import data_name, get_units, plot_errorbar, plot_smooth
@@ -17,7 +18,8 @@ DEFAULT_FMT = "o"
 
 logger = logging.getLogger(__name__)
 
-opt_show_plots = False
+opt_show_plots = True
+opt_plot_ext = DEFAULT_EXT
 
 plt.rcParams.update({"font.size": FONT_SIZE})
 
@@ -27,35 +29,36 @@ plot_functions = {
 }
 
 def save(
-    filename: _typing.Path = None,
+    filename: str,
     append: str = None,
     **kwargs
 ):
+    global opt_plot_ext
+    global PLOTS_DIR
+
     plt.tight_layout()
 
-    # Default save location
-    path, name = utils.get_caller_name()
-
-    if filename is not None:
-        name = filename
-
-    stem = f"{name}.{DEFAULT_EXT}"
-
-    filename = path / PLOTS_DIR / stem
-
     if append is not None:
-        filename = filename.parent / \
-            f"{filename.stem}-{append}{filename.suffix}"
+        filename += f"-{append}"
 
-    logger.info(f"Saving figure at '{filename}'.")
-    plt.savefig(filename, **kwargs)
+    filename += f".{opt_plot_ext}"
 
-    if opt_show_plots:
-        logger.info(f"Showing plot for '{filename.stem}'.")
-        plt.show()
+    path = Path(PLOTS_DIR) / filename
 
+    logger.info(f"Saving figure at '{path}'.")
+
+    Path(PLOTS_DIR).mkdir(parents=True, exist_ok=True)
+
+    plt.savefig(path, **kwargs)
+
+
+def show():
+    if opt_show_plots is False:
+        return
+
+    plt.tight_layout()
+    plt.show()
     plt.close()
-
 
 
 def data(
@@ -67,8 +70,8 @@ def data(
     ylabel: str = None,
     fmt=DEFAULT_FMT,
     figsize=DEFAULT_FIGSIZE,
-    noshow=False,           # don't show the plot
-    saveto: _typing.Path = None,    # custom save path
+    # noshow=False,           # don't show the plot
+    saveto: str = None,    # custom save path
     separate_rows=False,    # use a different row for each plot if provided
     plot_method: str = None,
     xlim: tuple[_typing.Any] = None,
@@ -159,8 +162,7 @@ def data(
                 fmt, label, xlabel, ylabel
             )
 
-    # noshow is useful if wanting to add something to the plot
-    if not noshow:
+    if saveto is not None:
         save(saveto)
 
     return fig, ax
@@ -180,7 +182,7 @@ def data_and_fit(
     units: float = None,
     residue_units: tuple[float, str] = None,
     noshow=False,
-    saveto: _typing.Path = None,
+    saveto: str = None,
     **kwargs
 ):
     """
@@ -220,7 +222,7 @@ def data_and_fit(
 
         x_fit = np.linspace(min(x_data), max(x_data), n_points)
 
-    y_fit = fit_func.func.f(x_fit, *fit_func.params)
+    y_fit = fit_fun.func.f(x_fit, *fit_fun.params)
 
     if units is not None:
         y_fit *= units
@@ -252,14 +254,14 @@ def data_and_fit(
 
     else:
         # Change units for residue
-        fit_func.residue *= residue_units[0]
+        fit_fun.residue *= residue_units[0]
         yerr *= residue_units[0]
 
         ylabel = f"Residuos [{residue_units[1]}]"
 
     ax_res.errorbar(
         x_data,
-        fit_func.residue,
+        fit_fun.residue,
         yerr=yerr,
         fmt=fmt)
 
