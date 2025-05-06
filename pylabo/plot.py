@@ -170,7 +170,7 @@ def data_and_fit(
     x_data: _typing._typing.Any,
     y_data: _typing._typing.Any,
     error: _typing._typing.Any | tuple[_typing._typing.Any],
-    fit_func: fit.f.EvalFunction,
+    fit_fun: fit.funs.EvalFunction,
     fmt=DEFAULT_FMT,
     figsize=DEFAULT_FIGSIZE,
     datalabel: str = "Mediciones",
@@ -209,7 +209,7 @@ def data_and_fit(
     )
 
     # If function is linear, use only 2 points for y_fit
-    if fit_func.func is fit.f.linear:
+    if fit_fun.func is fit.funs.linear:
         x_fit = np.array([min(x_data), max(x_data)])
 
     # else, create a higher resolution y_fit
