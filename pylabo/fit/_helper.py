@@ -1,44 +1,12 @@
-from scipy.optimize import curve_fit
 import numpy as np
 import pprint
-import sys
 import logging
 
-from . import function
+from . import funs
 
 logger = logging.getLogger(__name__)
 
 opt_show_result = False
-
-def find(
-    func: function.Function,
-    data_x,
-    data_y,
-    p0=None,
-    yerr=None
-):
-    """
-    Fit a function to data.
-    """
-
-    try:
-        param_opt, param_cov = curve_fit(
-            func.f,
-            data_x,
-            data_y,
-            p0=p0,
-            sigma=yerr,
-            absolute_sigma=True
-        )
-    except RuntimeError as e:
-        logger.error("Failed to fit function :(.")
-        logger.error(e)
-        sys.exit(1)
-
-    # Error in parameters
-    param_err = np.sqrt(np.diag(param_cov))
-
-    return param_opt, param_err
 
 
 # reduced chi-squared
@@ -60,7 +28,7 @@ def r2(
 
 
 def result(
-    func: function.Function,
+    func: funs.Function,
     p_opt,
     p_err,
     chi,

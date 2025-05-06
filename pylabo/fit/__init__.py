@@ -1,1 +1,1 @@
-from . import function, func_fit
+from . fit import func_fit

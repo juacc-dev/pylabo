@@ -1,28 +1,62 @@
+from scipy.optimize import curve_fit
+import numpy as np
 from pathlib import Path
-from pylabo import data
 import logging
+import sys
 
-from . import function
-from . _helper import find, chi2_r, r2, result
+from pylabo import data
+from . import funs
+from . _helper import chi2_r, r2, result
 
 logger = logging.getLogger(__name__)
 
 
+def find(
+    func: funs.Function,
+    data_x,
+    data_y,
+    p0=None,
+    yerr=None
+):
+    """
+    Fit a function to data.
+    """
+
+    try:
+        param_opt, param_cov = curve_fit(
+            func.f,
+            data_x,
+            data_y,
+            p0=p0,
+            sigma=yerr,
+            absolute_sigma=True
+        )
+    except RuntimeError as e:
+        logger.error("Failed to fit function :(.")
+        logger.error(e)
+        sys.exit(1)
+
+    # Error in parameters
+    param_err = np.sqrt(np.diag(param_cov))
+
+    return param_opt, param_err
+
+
 def func_fit(
-    func: function.Function,
+    func: funs.Function,
     x_data,
     y_data,
     saveto: Path | str = None,
     p0=None,
     yerr=None,
     nosave=False
-) -> function.EvalFunction:
+) -> funs.EvalFunction:
     """
     Fit a function to data and save results.
     Returns y_fit and (param_opt, param_err)
     """
 
-    if not (func is function.linear or func is function.linear_homog) \
+    if not (func is funs.linear or func is funs.linear_homog) \
             and p0 is None:
         logger.warning("Passing no initial parameters for non linear function.")
 
@@ -46,13 +80,13 @@ def func_fit(
         len(p_opt)
     )
 
-    if not (func is function.linear or func is function.linear_homog):
+    if not (func is funs.linear or func is funs.linear_homog):
         logger.warning("Non linear function. Calculating chi squared anyways.")
 
     # R^2 test
     r_sq = r2(y_data, residue)
 
-    fit_func = function.EvalFunction(
+    fit_func = funs.EvalFunction(
         func,
         p_opt,
         p_err,

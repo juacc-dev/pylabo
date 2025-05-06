@@ -3,9 +3,8 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . import _typing
-from . _utils import data_name, get_units
-from . _helper import plot_errorbar, plot_smooth
+from pylabo._plot import _typing
+from pylabo._plot._helper import data_name, get_units, plot_errorbar, plot_smooth
 
 # Types
 
