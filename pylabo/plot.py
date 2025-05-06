@@ -10,16 +10,15 @@ from pylabo._plot._helper import data_name, get_units, plot_errorbar, plot_smoot
 # Types
 
 PLOTS_DIR = "plots"
-DEFAULT_EXT = "png"
-DEFAULT_FIGSIZE = (8, 6)
+EXT = "png"
+FIGSIZE = (8, 6)
 DPI = 100
-FONT_SIZE = 18
-DEFAULT_FMT = "o"
+FONT_SIZE = 10
+FMT = "o"
 
 logger = logging.getLogger(__name__)
 
 opt_show_plots = True
-opt_plot_ext = DEFAULT_EXT
 
 plt.rcParams.update({"font.size": FONT_SIZE})
 
@@ -33,15 +32,12 @@ def save(
     append: str = None,
     **kwargs
 ):
-    global opt_plot_ext
-    global PLOTS_DIR
-
     plt.tight_layout()
 
     if append is not None:
         filename += f"-{append}"
 
-    filename += f".{opt_plot_ext}"
+    filename += f".{EXT}"
 
     path = Path(PLOTS_DIR) / filename
 
@@ -68,8 +64,8 @@ def data(
     label: str | list[str] = None,
     xlabel: str = None,
     ylabel: str = None,
-    fmt=DEFAULT_FMT,
-    figsize=DEFAULT_FIGSIZE,
+    fmt=FMT,
+    figsize=FIGSIZE,
     # noshow=False,           # don't show the plot
     saveto: str = None,    # custom save path
     separate_rows=False,    # use a different row for each plot if provided
@@ -173,8 +169,8 @@ def data_and_fit(
     y_data: _typing.Any,
     error: _typing.Any | tuple[_typing.Any],
     fit_fun: fit.funs.EvalFunction,
-    fmt=DEFAULT_FMT,
-    figsize=DEFAULT_FIGSIZE,
+    fmt=FMT,
+    figsize=FIGSIZE,
     datalabel: str = "Mediciones",
     fitlabel: str = "Ajuste",
     xlabel: str = None,
@@ -217,7 +213,7 @@ def data_and_fit(
     # else, create a higher resolution y_fit
     else:
         # Number of points depends on plot width
-        n_points = DEFAULT_FIGSIZE[0] * DPI
+        n_points = FIGSIZE[0] * DPI
         logger.info(f"Using {n_points} points to plot fit.")
 
         x_fit = np.linspace(min(x_data), max(x_data), n_points)
@@ -243,7 +239,7 @@ def data_and_fit(
     # Plot residue separately
 
     fig_res, ax_res = plt.subplots(
-        figsize=DEFAULT_FIGSIZE
+        figsize=FIGSIZE
     )
 
     yerr = error[1] if isinstance(error, tuple) else error
@@ -285,10 +281,10 @@ def data_polar(
     terr=None,
     title: str = None,
     label: str = None,
-    figsize=DEFAULT_FIGSIZE,
+    figsize=FIGSIZE,
     rorigin=None,
     rlabel=None,
-    fmt=DEFAULT_FMT,
+    fmt=FMT,
     **kwargs
 ):
     """
