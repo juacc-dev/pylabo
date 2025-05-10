@@ -1,16 +1,15 @@
-import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-from pylabo import fit
+from pylabo import fit, logging
 from pylabo.utils import set_if_none
 from pylabo._plot import _typing
 from pylabo._plot._helper import data_name, get_units, \
     plot_errorbar, plot_smooth
 
 
-logger = logging.getLogger(__name__)
+logger = logging.init("pylabo.plot")
 
 DEF_FONT_FAMILY = ""
 DEF_FONT_SIZE = 10
@@ -25,6 +24,8 @@ DEF_SHOW = True
 def opts(**kwargs):
     for k, v in kwargs.items():
         match k:
+            case "font_family":
+                opts.font_family = v
             case "font_size":
                 opts.font_size = v
                 plt.rcParams.update({"font.size": v})
@@ -44,14 +45,15 @@ def opts(**kwargs):
                 logger.error("Invalid option.")
 
     return
-opts.font_family = DEF_FONT_FAMILY,
-opts.font_size = DEF_FONT_SIZE,
-opts.dir = DEF_DIR,
-opts.ext = DEF_EXT,
-opts.figsize = DEF_FIGSIZE,
-opts.dpi = DEF_DPI,
-opts.fmt = DEF_FMT,
-opts.show = DEF_SHOW,
+
+opts.font_family = DEF_FONT_FAMILY
+opts.font_size   = DEF_FONT_SIZE
+opts.dir         = DEF_DIR
+opts.ext         = DEF_EXT
+opts.figsize     = DEF_FIGSIZE
+opts.dpi         = DEF_DPI
+opts.fmt         = DEF_FMT
+opts.show        = DEF_SHOW
 
 
 plot_functions = {

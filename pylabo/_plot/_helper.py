@@ -1,8 +1,7 @@
-import logging
-
+from pylabo import logging
 from . import _typing
 
-logger = logging.getLogger(__name__)
+logger = logging.init("pylabo.plot")
 
 def get_units(label: str) -> str:
     """

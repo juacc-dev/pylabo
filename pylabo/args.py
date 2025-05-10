@@ -1,18 +1,19 @@
 import sys
 import getopt
-import logging
-from pylabo import data, plot, fit
+from pylabo import data, plot, fit, logging
 
-logger = logging.getLogger(__name__)
+logger = logging.init("pylabo.args")
 
 
-def parse(argv: list[str]) -> list[str]:
+def parse() -> list[str]:
     try:
-        opts, args = getopt.getopt(argv, "pvRl:dr")
+        opts, args = getopt.getopt(sys.argv[1:], "pvRl:dr")
 
     except getopt.GetoptError as err:
         logger.error(err)
         sys.exit(1)
+
+    logger.info("Parsing CLI options.")
 
     for opt, arg in opts:
         match opt:
@@ -22,7 +23,7 @@ def parse(argv: list[str]) -> list[str]:
 
             # Verbose
             case "-v":
-                logging.basicConfig(level=logging.INFO)
+                logging.set_level(logging.INFO)
 
             # Regenerate data from Google Sheets
             case "-R":
@@ -30,7 +31,7 @@ def parse(argv: list[str]) -> list[str]:
 
             # Log file
             case "-l":
-                logging.basicConfig(filename=arg)
+                logging.logfile(arg)
 
             # Show dataframe
             case "-d":

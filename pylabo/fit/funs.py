@@ -62,6 +62,13 @@ harmonic = Function(
 )
 
 
+exp = Function(
+    lambda x, x0, k: k * np.exp(x - x0),
+    ["x_0", "k"],
+    r"k e^{x - x_0}"
+)
+
+
 # Damped harmonic oscillator
 lorentz = Function(
     lambda w, w_0, gamma, A:

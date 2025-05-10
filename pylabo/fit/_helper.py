@@ -1,10 +1,7 @@
 import numpy as np
 import pprint
-import logging
 
 from . import funs
-
-logger = logging.getLogger(__name__)
 
 opt_show_result = False
 

@@ -22,7 +22,7 @@ class FunctionGenerator(visa.Instrument):
     def __init__(self, address, **kwargs):
         super().__init__(self, address, **kwargs)
 
-    def volt(self, voltage=None, ch=1):
+    def voltage(self, voltage=None, ch=1):
         if voltage is not None:
             self.write(f"SOURce{ch}:VOLTage {voltage}")
 

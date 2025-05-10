@@ -1,12 +1,12 @@
 import gspread
 from google.oauth2.service_account import Credentials
 import sys
-import logging
 import pandas as pd
 from pathlib import Path
+from pylabo import logging
 
 # sheets
-logger = logging.getLogger(__name__)
+logger = logging.init("pylabo.sheets")
 
 # CREDS_PATH = Path("~/.config/gspread/labo2_SA.json").expanduser()
 CREDS_PATH = None

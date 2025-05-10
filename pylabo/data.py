@@ -1,9 +1,8 @@
 from pathlib import Path
 import pandas as pd
-import logging
-from pylabo import utils
+from pylabo import utils, logging
 
-logger = logging.getLogger(__name__)
+logger = logging.init("pylabo.data")
 
 DATA_DIR = "data"
 RESULTS_DIR = "results"
@@ -109,7 +108,7 @@ def load(
 
 def save(
     data: dict,
-    filename: Path | str = None,
+    filename: Path | str,
     append: str = None
     # sheet: str = None
 ) -> None:
@@ -119,11 +118,6 @@ def save(
 
     # Convert dictionary to dataframe
     df = pd.DataFrame(data)
-
-    if filename is None:
-        path, name = utils.get_caller_name()
-
-        filename = path / f"{RESULTS_DIR}/{name}.csv"
 
     # if append is not None:
     #     new_name = f"{filename.stem}-{append}"

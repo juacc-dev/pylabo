@@ -1,14 +1,14 @@
 from scipy.optimize import curve_fit
 import numpy as np
 from pathlib import Path
-import logging
+# import logging
 import sys
 
-from pylabo import data
+from pylabo import data, logging
 from . import funs
 from . _helper import chi2_r, r2, result
 
-logger = logging.getLogger(__name__)
+logger = logging.init("pylabo.fit")
 
 
 def find(
@@ -31,9 +31,10 @@ def find(
             sigma=yerr,
             absolute_sigma=True
         )
+
     except RuntimeError as e:
-        logger.error("Failed to fit function :(.")
-        logger.error(e)
+        logger.warning("Failed to fit function :(.")
+        logger.warning(e)
         sys.exit(1)
 
     # Error in parameters
@@ -46,10 +47,9 @@ def func_fit(
     func: funs.Function,
     x_data,
     y_data,
-    saveto: Path | str = None,
     p0=None,
     yerr=None,
-    nosave=False
+    saveto: Path | str = None,
 ) -> funs.EvalFunction:
     """
     Fit a function to data and save results.
@@ -95,7 +95,7 @@ def func_fit(
         chi_sq_red
     )
 
-    if not nosave:
+    if saveto is not None:
         res = result(
             func,
             p_opt,
