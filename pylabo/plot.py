@@ -1,14 +1,16 @@
-from pylabo import utils, fit
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+from pylabo import fit
 from pylabo.utils import set_if_none
 from pylabo._plot import _typing
-from pylabo._plot._helper import data_name, get_units, plot_errorbar, plot_smooth
+from pylabo._plot._helper import data_name, get_units, \
+    plot_errorbar, plot_smooth
 
-# Types
+
+logger = logging.getLogger(__name__)
 
 DEF_FONT_FAMILY = ""
 DEF_FONT_SIZE = 10
@@ -18,10 +20,6 @@ DEF_FIGSIZE = (8, 6)
 DEF_DPI = 100
 DEF_FMT = "o"
 DEF_SHOW = True
-
-logger = logging.getLogger(__name__)
-
-# opt_show_plots = True
 
 
 def opts(**kwargs):
@@ -118,9 +116,14 @@ def data(
 
     fmt = set_if_none(fmt, opts.fmt)
     figsize = set_if_none(figsize, opts.figsize)
+    logger.info(f"Using figsize {figsize}")
+    logger.info(f"Using format {fmt}")
 
     # There may be multiple y_data
     multiplot = False if not isinstance(y_data, list) else len(y_data)
+
+    if multiplot:
+        logger.info(f"Doing multiple plots, y_data is of lenght {len(y_data)}")
 
     if not multiplot and separate_rows:
         logger.warning(
@@ -130,13 +133,13 @@ def data(
     # if specified separate_rows, plot
     rows = 1 if not multiplot or not separate_rows else multiplot
     cols = 1
+    logger.info(f"Plotting {rows} rows and {cols} columns.")
 
     fig, ax = plt.subplots(
         rows,
         cols,
         figsize=figsize,
-        sharex=False if rows == 1 else True,
-        **kwargs
+        sharex=False if rows == 1 else True
     )
 
     # Change domain
