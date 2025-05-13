@@ -72,10 +72,11 @@ class Oscilloscope(Instrument):
 
         return self.query("HORizontal:POSition?")
 
-    def config(
+    def vertical(
         self,
+        *,
         ch=0,
-        scale=None, # In volts
+        height=None, # In volts
         pos=None # ??
     ):
         ch_list = channel_list(ch)
@@ -83,10 +84,10 @@ class Oscilloscope(Instrument):
         # settings = {}
 
         for ch in ch_list:
-            if scale is not None:
+            if height is not None:
                 logger.debug(f"Setting scale of channel {ch}")
 
-                scale /= Y_DIVISIONS
+                scale = height / Y_DIVISIONS
                 self.write(f"CH{ch}:SCAle {scale:.1E}")
 
             if pos is not None:
@@ -102,13 +103,14 @@ class Oscilloscope(Instrument):
 
     def horizontal(
         self,
-        scale=None, # seconds per division
+        *,
+        width=None, # In seconds
         pos=None
     ):
-        if scale is not None:
+        if width is not None:
             logger.debug("Setting horizontal scale")
 
-            scale /= X_DIVISIONS
+            scale = width / X_DIVISIONS
             self.write(f"HORizontal:SCAle {scale:.1E}")
 
         if pos is not None:
