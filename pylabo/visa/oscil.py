@@ -24,7 +24,7 @@ class Oscilloscope(Instrument):
         backend: str = None,
         **kwargs
     ):
-        super().__init__(self, address, backend, **kwargs)
+        super().__init__(address, backend=backend, **kwargs)
 
         self.x0: float = 0
         self.dx: float = 0

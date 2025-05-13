@@ -27,7 +27,7 @@ class FunctionGenerator(Instrument):
         backend: str = None,
         **kwargs
     ):
-        super().__init__(self, address, backend, **kwargs)
+        super().__init__(address, backend=backend, **kwargs)
 
     def output(
         self,
