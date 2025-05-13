@@ -1,6 +1,8 @@
-from . import visa
+from . visa import Instrument, channel_list
 from enum import Enum
+from pylabo import logging
 
+logger = logging.init("pylabo.visa")
 
 class Funs(Enum):
     SINE = "SINusoid"
@@ -18,42 +20,75 @@ class Funs(Enum):
     USER4 = "USER4"
 
 
-class FunctionGenerator(visa.Instrument):
+class FunctionGenerator(Instrument):
     def __init__(self, address, **kwargs):
         super().__init__(self, address, **kwargs)
 
-    def voltage(self, voltage=None, ch=1):
-        if voltage is not None:
-            self.write(f"SOURce{ch}:VOLTage {voltage}")
+    def output(
+        self,
+        ch=0,
+        state=None
+    ):
+        ch_list = channel_list(ch)
 
-        return self.query(f"SOURce{ch}:VOLTage?")
-
-
-    def freq(self, frequency=None, ch=1):
-        if frequency is not None:
-            self.write(f"SOURce{ch}:FREQuency {frequency}")
-
-        return self.query(f"SOURce{ch}:FREQuency?")
+        for ch in ch_list:
+            if state is not None:
+                self.write(f"OUTPut{ch}:STATe {state}")
 
 
-    def function(self, shape: Funs|str = None, ch=1):
-        if shape is not None:
-            shape = shape.value if type(shape) is Funs else shape
+    def config(
+        self,
+        ch=0,
+        voltage=None,
+        freq=None,
+        shape=None,
+        impedance=None,
+    ):
+        ch_list = channel_list(ch)
 
-            self.write(f"SOURce{ch}:FUNCtion:SHAPe {shape}")
+        settings = {}
 
-        return self.query(f"SOURce{ch}:FUNCtion:SHAPe?")
+        for ch in ch_list:
+            if voltage is not None:
+                self.write(f"SOURce{ch}:VOLTage {voltage}")
+
+            if freq is not None:
+                self.write(f"SOURce{ch}:FREQuency {freq}")
+
+            if shape is not None:
+                shape = shape.value if type(shape) is Funs else shape
+
+                self.write(f"SOURce{ch}:FUNCtion:SHAPe {shape}")
+
+            if impedance is not None:
+                self.write(f"OUTPut{ch}:IMPedance {impedance}")
 
 
-    def output(self, state=None, ch=1):
-        if state is not None:
-            self.write(f"OUTPut{ch}:STATe {state}")
+            settings[ch] = self.query(
+                f"SOUR{ch}:VOLT;FREQ;FUNC:SHAP;:SOUR:IMP",
+                ascii=True,
+                separator=';'
+            )
 
-        return self.query(f"OUTPut{ch}:STATe?")
+
+        logger.info(f"Fungen settings: {settings}")
+        return settings
+    # def voltage(self, voltage=None, ch=1):
+
+    #     return self.query(f"SOURce{ch}:VOLTage?")
 
 
-    def impedance(self, value=None, ch=1):
-        if value is not None:
-            self.write(f"OUTPut{ch}:IMPedance {value}")
+    # def freq(self, frequency=None, ch=1):
 
-        return self.query(f"OUTPut{ch}:IMPedance?")
+    #     return self.query(f"SOURce{ch}:FREQuency?")
+
+
+    # def function(self, shape: Funs|str = None, ch=1):
+
+    #     return self.query(f"SOURce{ch}:FUNCtion:SHAPe?")
+
+
+
+    # def impedance(self, value=None, ch=1):
+
+    #     return self.query(f"OUTPut{ch}:IMPedance?")

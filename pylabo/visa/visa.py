@@ -9,6 +9,9 @@
 # TODO: Check if the instruments actually support *OPC
 
 import pyvisa as pyvisa
+from pylabo import logging
+
+logger = logging.init("pylabo.visa")
 
 backends = {
     "NI-VISA": "",
@@ -21,6 +24,22 @@ def find_instruments():
     rm = pyvisa.ResourceManager()
 
     print(rm.list_resources())
+
+
+def channel_list(ch: int) -> list[int]:
+    ch_list = [1, 2]
+
+    match ch:
+        case 0:
+            pass
+        case 1:
+            ch_list = [1]
+        case 2:
+            ch_list = [2]
+        case _:
+            logger.error(f"Invalid channel {ch}")
+
+    return ch_list
 
 
 class Instrument:

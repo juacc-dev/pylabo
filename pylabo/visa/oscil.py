@@ -1,12 +1,23 @@
-from . import visa
+from . visa import Instrument, channel_list
 import numpy as np
+from pylabo import logging
 
-X_ACCURACY = 50.0 / 10 ** 6
-Y_ACCURACY = 0.03
-DIVISIONS = 10
+logger = logging.init("pylabo.visa")
+
+X_ACCURACY = 50.0 / 10 ** 6  # 50 ppm
+Y_ACCURACY = 0.03  # 3% of measurement
+Y_DIVISIONS = 10
+X_DIVISIONS = 15  # Maybe not
 SCREEN_HEIGHT = 255
 
-class Osciloscopio(visa.Instrument):
+# DATA_ENCODING = ""
+
+
+def closest(value, options):
+    return min(options, key=lambda x: abs(x - value))
+
+
+class Oscilloscope(Instrument):
     def __init__(self, address, **kwargs):
         super().__init__(self, address, **kwargs)
 
@@ -30,22 +41,6 @@ class Osciloscopio(visa.Instrument):
             self.write(f"ACQuire:STATE {state}")
 
         return self.query("ACQuire?")
-
-    # def autorange(
-    #     self,
-    #     *,
-    #     on: bool = None
-    # ):
-    #     if on is not None:
-    #         state = 1 if on is True else 0
-    #         self.write(f"AUTORange:STATE {state}")
-
-    #     # There is no query form for autorange
-    #     # Programmer manual pg. 2-44 (62)
-    #     return self.query("AUTORange")
-
-    def autoset(self):
-        return
 
 
     def y_scale(self, ch, scale=None):
@@ -77,28 +72,87 @@ class Osciloscopio(visa.Instrument):
 
         return self.query("HORizontal:POSition?")
 
+    def config(
+        self,
+        ch=0,
+        scale=None, # In volts
+        pos=None # ??
+    ):
+        ch_list = channel_list(ch)
+
+        # settings = {}
+
+        for ch in ch_list:
+            if scale is not None:
+                logger.debug(f"Setting scale of channel {ch}")
+
+                scale /= Y_DIVISIONS
+                self.write(f"CH{ch}:SCAle {scale:.1E}")
+
+            if pos is not None:
+                logger.debug(f"Setting posisition of channel {ch}")
+
+                self.write(f"CH{ch}:POSition {pos:.1E}")
+
+        #     settings[ch] = self.query(f"CH{ch}:SCAle;POSition?")
+
+        # logger.info(f"Osciloscope vertical settings: {settings}")
+
+        # return settings
+
+    def horizontal(
+        self,
+        scale=None, # seconds per division
+        pos=None
+    ):
+        if scale is not None:
+            logger.debug("Setting horizontal scale")
+
+            scale /= X_DIVISIONS
+            self.write(f"HORizontal:SCAle {scale:.1E}")
+
+        if pos is not None:
+            logger.debug("Setting horizontal position")
+
+            self.write(f"HORizontal:POSition {pos:.1E}")
+
+        # settings = self.query("HORizontal:SCAle;POSition?")
+
+        # logger.info(f"Osciloscope horizontal settings: {settings}")
+
+        # return settings
+
 
     def curve(
         self,
-        chs: int = 0,
+        ch: int = 0,
     ):
         """
         ch=0 means both channels, 1 and 2.
         """
-        ys = []
+        Y = []
         sigma_y = []
 
-        channels = [1, 2] if chs == 0 else [1] if chs == 1 else [2]
+        ch_list = channel_list(ch)
 
-        for ch in channels:
+        for ch in ch_list:
+            if not self.is_done():
+                logger.error("Oscilloscope is not done (??)")
+
             # Set data source, in this case a channel
-            self.write(f"DATa:SOURce CH{chs}")
+            self.write(f"DATa:SOURce CH{ch}")
+            # self.write(f"DATa:DATa ENCdg {DATA_ENCODING}")
 
-            y0, y_units, vertical_offset = self.query(
-                "WFMPre:YZEro;YMUlt;YOFf?"
-                # ascii=True,
-                # separator=';'
+
+            settings = self.query(
+                "WFMPre:YZEro;YMUlt;YOFf?",
+                ascii=True,
+                separator=';'
             )
+
+            logger.info(f"Retrieved settings from channel {ch}: {settings}.")
+
+            y0, vertical_units, vertical_offset = settings
 
             # Retrieve curve data
             data = self.query(
@@ -108,22 +162,30 @@ class Osciloscopio(visa.Instrument):
                 container=np.array
             )
 
+            logger.info(f"Read {len(data)} points from oscilloscope.")
+
+
             # data: values from 0 to 255
-            # y_0: just what it suonds like
+            # y_0: just what it sounds like
             # vertical_offset: adjust data for converting units.
-            # y_units: converting factor, something like volts/pixel
+            # vertical_units: converting factor, something like volts/pixel
             # (technically, in the manual says y_units per digitizer levels)
-            y = y0 + (data - vertical_offset) * y_units
+            y = y0 + (data - vertical_offset) * vertical_units
 
-            ys.append(y)
+            Y.append(y)
 
-            sensitivity = self.y_scale(ch) * DIVISIONS / SCREEN_HEIGHT
+            # Size of a pixel (minimum unit of measure)
+            sensitivity = self.y_scale(ch) * Y_DIVISIONS / SCREEN_HEIGHT
 
+            # Error for each point, from the accuracy of the measurement
+            # and the sensitivity of the Instrument
             sigma_y.append(Y_ACCURACY * (y - y0) + sensitivity)
 
 
         x0 = self.query("WFMPre:XZEro?")
 
-        t = np.arange(x0, x0 + ys[0].size, self.dx)
+        logger.info(f"x_zero is {x0}")
 
-        return t, np.array(ys), np.array(sigma_y)
+        t = np.arange(x0, x0 + Y[0].size, self.dx)
+
+        return t, np.array(Y), np.array(sigma_y)
