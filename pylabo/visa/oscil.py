@@ -18,8 +18,13 @@ def closest(value, options):
 
 
 class Oscilloscope(Instrument):
-    def __init__(self, address, **kwargs):
-        super().__init__(self, address, **kwargs)
+    def __init__(
+        self,
+        address,
+        backend: str = None,
+        **kwargs
+    ):
+        super().__init__(self, address, backend, **kwargs)
 
         self.x0: float = 0
         self.dx: float = 0

@@ -53,6 +53,7 @@ class Instrument:
 
         if backend is None:
             backend = DEFAULT_BACKEND
+
         self._instrument = pyvisa.ResourceManager(backend).open_resource(
             resource_name=address,
             # read_termination='\n',

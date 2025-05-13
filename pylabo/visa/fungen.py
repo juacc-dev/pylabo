@@ -21,8 +21,13 @@ class Funs(Enum):
 
 
 class FunctionGenerator(Instrument):
-    def __init__(self, address, **kwargs):
-        super().__init__(self, address, **kwargs)
+    def __init__(
+        self,
+        address,
+        backend: str = None,
+        **kwargs
+    ):
+        super().__init__(self, address, backend, **kwargs)
 
     def output(
         self,
