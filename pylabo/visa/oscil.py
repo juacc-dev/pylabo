@@ -1,4 +1,5 @@
 from . visa import Instrument, channel_list
+import time
 import numpy as np
 from pylabo import logging
 
@@ -10,7 +11,8 @@ Y_DIVISIONS = 10
 X_DIVISIONS = 15  # Maybe not
 SCREEN_HEIGHT = 255
 
-# DATA_ENCODING = ""
+DATA_ENCODING = "RPBinary"  # positive integer, from 0 to 255
+DATA_WIDTH = 1  # 8 bits
 
 
 def closest(value, options):
@@ -146,10 +148,11 @@ class Oscilloscope(Instrument):
             if not self.is_done():
                 logger.error("Oscilloscope is not done (??)")
 
-            # Set data source, in this case a channel
-            self.write(f"DATa:SOURce CH{ch}")
-            # self.write(f"DATa:DATa ENCdg {DATA_ENCODING}")
-
+            # Set data source, in this case a channel, the binary encoding and
+            # the width
+            self.write(
+                f"DATa:SOURce CH{ch};ENCdg {DATA_ENCODING};WIDth {DATA_WIDTH}"
+            )
 
             settings = self.query(
                 "WFMPre:YZEro;YMUlt;YOFf?",
@@ -160,6 +163,10 @@ class Oscilloscope(Instrument):
             logger.info(f"Retrieved settings from channel {ch}: {settings}.")
 
             y0, vertical_units, vertical_offset = settings
+
+            # Maybe?
+            # It would be better to use synchronisation commands (check manual)
+            time.sleep(1)
 
             # Retrieve curve data
             data = self.query(
