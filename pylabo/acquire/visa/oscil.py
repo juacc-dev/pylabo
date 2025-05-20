@@ -264,8 +264,7 @@ class Oscilloscope(Instrument):
             separator=';'
         )
 
-        print(f"Oscilloscope events (channel: {ch}):")
-        print(events)
+        logger.info(f"Oscilloscope events (channel: {ch}): {events}")
 
         return y, sigma_y
 
