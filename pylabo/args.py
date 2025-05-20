@@ -1,6 +1,6 @@
 import sys
 import getopt
-from pylabo import data, plot, fit, logging
+from pylabo import data, fit, logging
 
 logger = logging.init("pylabo.args")
 
@@ -18,8 +18,8 @@ def parse() -> list[str]:
     for opt, arg in opts:
         match opt:
             # Don't show plots
-            case "-p":
-                plot.opts.show = False
+            # case "-p":
+            #     plot.opts.show = False
 
             # Verbose
             case "-v":

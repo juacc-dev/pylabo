@@ -128,8 +128,8 @@ class Instrument:
         return self._instrument.query(cmd)
 
 
-    def is_done(self) -> bool:
-        """
-        This function should block
-        """
-        return self.query("*OPC?") == "1"
+    # def is_done(self) -> bool:
+    #     """
+    #     This function should block (it doesn't)
+    #     """
+    #     return self.query("*OPC?") == "1"

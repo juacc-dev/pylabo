@@ -85,3 +85,9 @@ def plot_smooth(
 
     if label is not None:
         ax.legend()
+
+
+plot_functions = {
+    "errorbar": plot_errorbar,
+    "smooth": plot_smooth,
+}
