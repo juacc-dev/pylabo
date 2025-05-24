@@ -1,8 +1,8 @@
 from pathlib import Path
 import pandas as pd
-from pylabo import utils, logging
+import logging
 
-logger = logging.init("pylabo.data")
+logger = logging.getLogger("pylabo.data")
 
 DATA_DIR = "data"
 RESULTS_DIR = "results"

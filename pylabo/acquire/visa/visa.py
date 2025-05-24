@@ -9,9 +9,9 @@
 # TODO: Check if the instruments actually support *OPC
 
 import pyvisa as pyvisa
-from pylabo import logging
+import logging
 
-logger = logging.init("pylabo.visa")
+logger = logging.getLogger("pylabo.visa")
 
 backends = {
     "NI-VISA": "",

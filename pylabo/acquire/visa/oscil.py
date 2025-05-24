@@ -1,9 +1,9 @@
 from . visa import Instrument, channel_list
 import time
 import numpy as np
-from pylabo import logging
+import logging
 
-logger = logging.init("pylabo.visa")
+logger = logging.getLogger("pylabo.visa")
 
 X_ACCURACY = 50.0 / 10 ** 6  # 50 ppm
 Y_ACCURACY = 0.03  # 3% of measurement

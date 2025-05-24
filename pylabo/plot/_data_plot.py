@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 
 from pylabo.utils import set_if_none
-from pylabo import logging
+import logging
 from . _opts import opts
 from . _helper import plot_functions
 from . _typing import Any, Figure
 
-logger = logging.init("pylabo.plot")
+logger = logging.getLogger("pylabo.plot")
 
 def data(
     x_data: Any,

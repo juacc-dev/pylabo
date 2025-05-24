@@ -1,8 +1,8 @@
 from . visa import Instrument, channel_list
 from enum import Enum
-from pylabo import logging
+import logging
 
-logger = logging.init("pylabo.visa")
+logger = logging.getLogger("pylabo.visa")
 
 class Funs(Enum):
     SINE = "SINusoid"

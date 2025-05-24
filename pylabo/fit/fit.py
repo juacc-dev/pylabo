@@ -1,14 +1,14 @@
 from scipy.optimize import curve_fit
 import numpy as np
 from pathlib import Path
-# import logging
+import logging
 import sys
 
-from pylabo import data, logging
+from pylabo import data
 from . import funs
 from . _helper import chi2_r, r2, result
 
-logger = logging.init("pylabo.fit")
+logger = logging.getLogger("pylabo.fit")
 
 
 def find(

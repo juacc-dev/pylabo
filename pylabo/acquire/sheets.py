@@ -3,10 +3,10 @@ from google.oauth2.service_account import Credentials
 import sys
 import pandas as pd
 from pathlib import Path
-from pylabo import logging
+import logging
 
 # sheets
-logger = logging.init("pylabo.sheets")
+logger = logging.getLogger("pylabo.sheets")
 
 # CREDS_PATH = Path("~/.config/gspread/labo2_SA.json").expanduser()
 CREDS_PATH = None

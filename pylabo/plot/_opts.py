@@ -1,6 +1,6 @@
-from pylabo import logging
+import logging
 
-logger = logging.init("pylabo.plot")
+logger = logging.getLogger("pylabo.plot")
 
 
 DEFAULT_OPTS = {

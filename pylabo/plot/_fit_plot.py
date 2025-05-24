@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import logging
 
-from pylabo import logging
 from pylabo import fit
 from pylabo.utils import set_if_none
 from . _helper import get_units, data_name
@@ -10,7 +10,7 @@ from . _typing import Any
 from . _data_plot import data
 from . _save import save
 
-logger = logging.init("pylabo.plot")
+logger = logging.getLogger("pylabo.plot")
 
 def data_and_fit(
     x_data: Any,

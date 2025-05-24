@@ -1,13 +1,14 @@
 import sys
 import getopt
-from pylabo import data, fit, logging
+import logging
+from pylabo import data, fit, logs
 
-logger = logging.init("pylabo.args")
+logger = logging.getLogger("pylabo.args")
 
 
 def parse() -> list[str]:
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "pvRl:dr")
+        opts, args = getopt.getopt(sys.argv[1:], "vqRl:dr")
 
     except getopt.GetoptError as err:
         logger.error(err)
@@ -23,7 +24,10 @@ def parse() -> list[str]:
 
             # Verbose
             case "-v":
-                logging.set_level(logging.INFO)
+                logs.opts["console_level"] = logging.DEBUG
+
+            case "-q":
+                logs.opts["console_level"] = logging.WARNING
 
             # Regenerate data from Google Sheets
             case "-R":
@@ -31,7 +35,7 @@ def parse() -> list[str]:
 
             # Log file
             case "-l":
-                logging.logfile(arg)
+                logs.opts["logfile"] = arg
 
             # Show dataframe
             case "-d":

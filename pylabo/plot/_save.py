@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 from pathlib import Path
-from pylabo import logging
+import logging
 from . _opts import opts
 
-logger = logging.init("pylabo.plot")
+logger = logging.getLogger("pylabo.plot")
 
 def save(
     filename: str,
