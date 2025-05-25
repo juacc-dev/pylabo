@@ -4,7 +4,7 @@ import logging
 
 from pylabo import fit
 from pylabo.utils import set_if_none
-from . _helper import get_units, data_name
+from . _helper import get_units
 from . _opts import opts
 from . _typing import Any
 from . _data_plot import data
@@ -43,9 +43,6 @@ def data_and_fit(
         if ylabel is None:
             logger.warning("Did not change ylabel to accomodate for units.")
         y_data *= units
-
-    xlabel = xlabel if xlabel is not None else data_name(x_data)
-    ylabel = ylabel if ylabel is not None else data_name(y_data)
 
     fig, ax = data(
         x_data,

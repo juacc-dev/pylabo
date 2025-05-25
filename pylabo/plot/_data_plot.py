@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 from pylabo.utils import set_if_none
 import logging
 from . _opts import opts
-from . _helper import plot_functions
+from . _helper import plot_functions, data_name
 from . _typing import Any, Figure
 
 logger = logging.getLogger("pylabo.plot")
 
 def data(
     x_data: Any,
-    y_data: Any | list[Any],
+    y_data: Any | tuple[Any],
     error: Any | tuple[Any] = 0,
     xlabel: str = None,
     ylabel: str = None,
@@ -37,18 +37,21 @@ def data(
 
     fmt = set_if_none(fmt, opts.fmt)
     figsize = set_if_none(figsize, opts.figsize)
-    logger.debug(f"Using figsize {figsize}")
-    logger.debug(f"Using format {fmt}")
+    xlabel = set_if_none(xlabel, data_name(x_data))
+    ylabel = set_if_none(ylabel, data_name(y_data))
+
+    if xlabel is None and ylabel is None:
+        logger.warning("No axis labels specified for plot")
 
     # There may be multiple y_data
-    multiplot = False if not isinstance(y_data, list) else len(y_data)
+    multiplot = False if not isinstance(y_data, tuple) else len(y_data)
 
     if multiplot:
-        logger.info(f"Doing multiple plots, y_data is of lenght {len(y_data)}")
+        logger.info(f"Doing multiple plots, y_data is of lenght {len(y_data)}.")
 
     if not multiplot and separate_rows:
         logger.warning(
-            "Specified separate rows but there is only one set of data"
+            "Specified separate rows but there is only one set of data."
         )
 
     # if specified separate_rows, plot
@@ -78,6 +81,7 @@ def data(
 
     if plot_method is None:
         plot_method = "errorbar" if len(x_data) < 100 else "smooth"
+
     plot_function = plot_functions[plot_method]
 
     # Simple plot for only one set of data
@@ -87,9 +91,14 @@ def data(
 
             plot_function(
                 ax,
-                x_data, y_data,
-                xerr, yerr,
-                fmt, label, xlabel, ylabel
+                x_data,
+                y_data,
+                xerr,
+                yerr,
+                fmt,
+                label,
+                xlabel,
+                ylabel
             )
 
         # There are multiple y_data, plot them together
@@ -101,9 +110,14 @@ def data(
 
                 plot_function(
                     ax,
-                    x_data, y_data[i],
-                    xerr, yerr[i],
-                    fmt, lab, xlabel, ylabel
+                    x_data,
+                    y_data[i],
+                    xerr,
+                    yerr[i],
+                    fmt,
+                    lab,
+                    xlabel,
+                    ylabel
                 )
 
     # There may be multiple y_data, plot them in separate rows
@@ -113,13 +127,64 @@ def data(
         for i in range(rows):
             plot_function(
                 ax[i],
-                x_data, y_data[i],
-                xerr, yerr[i],
-                fmt, label, xlabel, ylabel
+                x_data,
+                y_data[i],
+                xerr,
+                yerr[i],
+                fmt,
+                label,
+                xlabel,
+                ylabel
             )
 
     return fig, ax
 
+
+def elements(
+    x_data,
+    y_data,
+    error,
+
+    plot_method = None,
+    xlabel: str = None,
+    ylabel: str = None,
+    fmt=None,
+    figsize=None,
+):
+    fmt = set_if_none(fmt, opts.fmt)
+    figsize = set_if_none(figsize, opts.figsize)
+    xlabel = set_if_none(xlabel, data_name(x_data))
+
+    rows = 2
+    cols = 1
+
+    fig, (ax_x, ax_y) = plt.subplots(
+        rows,
+        cols,
+        figsize=figsize,
+        sharex=False if rows == 1 else True
+    )
+
+    (xerr, yerr) = error if isinstance(error, tuple) else (None, error)
+
+    ax_x.plot(x_data)
+
+    ax_x.set(
+        xlabel="Número de elemento",
+        ylabel=xlabel
+    )
+
+    y_datas = list(y_data) if isinstance(y_data, tuple) else [y_data]
+    yerrs = list(yerr) if isinstance(yerr, tuple) else [yerr]
+    ylabels = [data_name(y) for y in y_datas]
+
+    for i in range(len(y_datas)):
+        ax_y.errorbar(
+            y_datas[i],
+            yerr=yerrs[i],
+            fmt=fmt,
+            label=ylabels[i]
+        )
 
 # def data_polar(
 #     theta_data,

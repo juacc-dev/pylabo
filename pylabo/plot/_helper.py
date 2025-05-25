@@ -28,14 +28,35 @@ def data_name(data) -> str | None:
         return data.name
 
     else:
-        logger.warning("Label not specified")
         return None
+
+def axis_basic_settings(
+    ax,
+    xlabel,
+    ylabel,
+    label
+):
+    ax.set(
+        xlabel=xlabel,
+        ylabel=ylabel
+    )
+
+    ax.grid(True)
+
+    if label is not None:
+        ax.legend()
+
 
 def plot_errorbar(
     ax,
-    x_data, y_data,
-    xerr, yerr,
-    fmt, label, xlabel, ylabel
+    x_data,
+    y_data,
+    xerr,
+    yerr,
+    fmt,
+    label,
+    xlabel,
+    ylabel
 ):
 
     # Simple plot
@@ -48,20 +69,19 @@ def plot_errorbar(
         label=label
     )
 
-    ax.set(xlabel=xlabel if xlabel is not None else data_name(x_data))
-    ax.set(ylabel=ylabel if ylabel is not None else data_name(y_data))
-
-    ax.grid(True)
-
-    if label is not None:
-        ax.legend()
+    axis_basic_settings(ax, xlabel, ylabel, label)
 
 
 def plot_smooth(
     ax,
-    x_data, y_data,
-    xerr, yerr,
-    fmt, label, xlabel, ylabel
+    x_data,
+    y_data,
+    xerr,
+    yerr,
+    fmt,
+    label,
+    xlabel,
+    ylabel
 ):
     # Simple plot
     ax.plot(
@@ -78,13 +98,7 @@ def plot_smooth(
         label="Error"
     )
 
-    ax.set(xlabel=xlabel if xlabel is not None else data_name(x_data))
-    ax.set(ylabel=ylabel if ylabel is not None else data_name(y_data))
-
-    ax.grid(True)
-
-    if label is not None:
-        ax.legend()
+    axis_basic_settings(ax, xlabel, ylabel, label)
 
 
 plot_functions = {

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from pathlib import Path
 import logging
-from . _opts import opts
+from ._opts import opts
 
 logger = logging.getLogger("pylabo.plot")
 
@@ -10,7 +10,7 @@ def save(
     append: str = None,
     **kwargs
 ):
-    plt.tight_layout()
+    # plt.tight_layout()
 
     if append is not None:
         filename += f"-{append}"
@@ -19,7 +19,7 @@ def save(
 
     path = Path(opts.dir) / filename
 
-    logger.info(f"Saving figure at '{path}'.")
+    logger.info(f"Saving figure to '{path}'.")
 
     path.parent.mkdir(parents=True, exist_ok=True)
 

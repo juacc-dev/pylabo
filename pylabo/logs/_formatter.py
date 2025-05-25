@@ -15,7 +15,7 @@ class ConsoleFormatter(logging.Formatter):
 
     bright_red = esc + "91m"
 
-    format_string = f"{reset} :: {white}(%(name)s) {reset} %(message)s"
+    format_string = f"{reset} :: {white}(%(name)s){reset} %(message)s"
 
     FORMATS = {
         logging.DEBUG:    bold + green + "[Debug]" + format_string,
