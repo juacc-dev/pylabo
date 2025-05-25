@@ -186,6 +186,9 @@ def elements(
         ylabel=ylabel
     )
 
+    ax_x.grid(True)
+    ax_y.grid(True)
+
 # def data_polar(
 #     theta_data,
 #     r_data,
