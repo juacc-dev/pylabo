@@ -143,9 +143,8 @@ def data(
 def elements(
     x_data,
     y_data,
-    error,
-
-    plot_method = None,
+    error=None,
+    *,
     xlabel: str = None,
     ylabel: str = None,
     fmt=None,
@@ -154,37 +153,38 @@ def elements(
     fmt = set_if_none(fmt, opts.fmt)
     figsize = set_if_none(figsize, opts.figsize)
     xlabel = set_if_none(xlabel, data_name(x_data))
+    ylabel = set_if_none(ylabel, data_name(y_data))
 
     rows = 2
     cols = 1
 
-    fig, (ax_x, ax_y) = plt.subplots(
+    fig, (ax_y, ax_x) = plt.subplots(
         rows,
         cols,
         figsize=figsize,
-        sharex=False if rows == 1 else True
+        sharex=True
     )
 
     (xerr, yerr) = error if isinstance(error, tuple) else (None, error)
 
-    ax_x.plot(x_data)
+    ax_x.plot(
+        x_data,
+        fmt
+    )
 
     ax_x.set(
         xlabel="Número de elemento",
         ylabel=xlabel
     )
 
-    y_datas = list(y_data) if isinstance(y_data, tuple) else [y_data]
-    yerrs = list(yerr) if isinstance(yerr, tuple) else [yerr]
-    ylabels = [data_name(y) for y in y_datas]
-
-    for i in range(len(y_datas)):
-        ax_y.errorbar(
-            y_datas[i],
-            yerr=yerrs[i],
-            fmt=fmt,
-            label=ylabels[i]
-        )
+    ax_y.plot(
+        y_data,
+        fmt,
+        label=ylabel
+    )
+    ax_y.set(
+        ylabel=ylabel
+    )
 
 # def data_polar(
 #     theta_data,

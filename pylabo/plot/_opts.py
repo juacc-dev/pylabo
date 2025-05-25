@@ -10,7 +10,7 @@ DEFAULT_OPTS = {
     "ext":          "png",
     "figsize":      (8, 6),
     "dpi":          100,
-    "fmt":          "o",
+    "fmt":          ".",
     "layout":       "compressed",
 }
 
