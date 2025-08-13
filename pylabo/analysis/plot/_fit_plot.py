@@ -4,7 +4,7 @@ import logging
 
 from pylabo import fit
 from pylabo.utils import set_if_none
-from . _helper import get_units
+from . _helper import get_units, data_name
 from . _opts import opts
 from . _typing import Any
 from . _data_plot import data
@@ -38,24 +38,8 @@ def data_and_fit(
 
     fmt = set_if_none(fmt, opts.fmt)
     figsize = set_if_none(figsize, opts.figsize)
-
-    if units is not None:
-        if ylabel is None:
-            logger.warning("Did not change ylabel to accomodate for units.")
-        y_data *= units
-
-    fig, ax = data(
-        x_data,
-        y_data,
-        error,
-        noshow=True,
-        label=datalabel,
-        xlabel=xlabel,
-        ylabel=ylabel,
-        fmt=fmt,
-        figsize=figsize,
-        **kwargs,
-    )
+    xlabel = set_if_none(xlabel, data_name(x_data))
+    ylabel = set_if_none(ylabel, data_name(y_data))
 
     # If function is linear, use only 2 points for y_fit
     if fit_fun.func is fit.funs.linear:
@@ -71,8 +55,41 @@ def data_and_fit(
 
     y_fit = fit_fun.func.f(x_fit, *fit_fun.params)
 
-    if units is not None:
-        y_fit *= units
+    (x_units, y_units) = units if isinstance(units, tuple) else (None, units)
+    (xerr, yerr) = error if isinstance(error, tuple) else (None, error)
+
+    if y_units is not None:
+        if ylabel is None:
+            logger.warning("Did not change ylabel to accomodate for units.")
+
+        y_data *= y_units
+        y_fit *= y_units
+        if yerr is not None:
+            yerr *= y_units
+
+    if x_units is not None:
+        if xlabel is None:
+            logger.warning("Did not change xlabel to accomodate for units.")
+
+        x_data *= x_units
+        x_fit *= x_units
+        if xerr is not None:
+            xerr *= x_units
+
+    error = (xerr, yerr)
+
+    fig, ax = data(
+        x_data,
+        y_data,
+        error,
+        noshow=True,
+        label=datalabel,
+        xlabel=xlabel,
+        ylabel=ylabel,
+        fmt=fmt,
+        figsize=figsize,
+        **kwargs,
+    )
 
     # Plot fit in 'ax' (on top of the data)
     ax.plot(

@@ -1,82 +1,78 @@
 import gspread
 from google.oauth2.service_account import Credentials
-import sys
 import pandas as pd
 from pathlib import Path
 import logging
+import os
+from pylabo.lib.opts import Options
+import pylabo.acquire.csv
 
-# sheets
-logger = logging.getLogger("pylabo.sheets")
+logger = logging.getLogger("pylabo.acquire.sheets")
 
-# CREDS_PATH = Path("~/.config/gspread/labo2_SA.json").expanduser()
-CREDS_PATH = None
+opts = Options()
+opts.force_download = False
 
-def setup(service_account_path: str):
-    global CREDS_PATH
-    CREDS_PATH = Path(service_account_path).expanduser
+# By default, the service account file is in ~/.config/gspread/creds.json
+opts.sa_file = Path(os.environ.get("XDG_CONFIG_HOME")) / "gspread/creds.json"
 
 
-def open_sheet(path: Path) -> gspread.Spreadsheet:
-    """
-    Open a Google Sheets document.
-    `path` is a directory containing a file named 'sheet-id', which has the id
-    of the document.
+def open(sheet_id) -> gspread.Spreadsheet:
+    """Open a Google Sheets' spreadsheet for reading and writing.
+
+    `sheet_id` is the ID for the spreadsheet, is can fe found in the URL of
+    the document after "https://docs.google.com/spreadsheets/d/".
     """
 
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
 
     creds = Credentials.from_service_account_file(
-        CREDS_PATH,
+        opts.sa_file,
         scopes=scopes)
 
     try:
+        logger.debug(f"Searching sheet with ID '{id}'.")
+
         client = gspread.authorize(creds)
-
-        logger.info("Opening `sheet-id`.")
-
-        with open(path/"sheet-id") as id_file:
-            id = id_file.read().rstrip('\n')
-
-        logger.info(f"Using key `{id}`.")
-        document = client.open_by_key(id)
-
-        return document
+        spreadsheet = client.open_by_key(id)
 
     except gspread.exceptions.SpreadsheetNotFound:
-        logger.error("gpread: Could not find spreadsheet.")
+        logger.error(f"Could not find spreadsheet with ID '{id}'.")
 
     except gspread.exceptions.NoValidUrlKeyFound:
-        logger.error("gpread: Invalid key.")
+        logger.error(f"Invalid sheet ID: {id}")
 
     except gspread.exceptions.APIError:
         logger.error(
-            """
-            gpread: API error, It might be usage limits: For Sheets API v4 it
-            is 300 requests per 60 seconds per project, and 60 requests per 60
-            seconds per user.
-            """)
+            "API error. It might be usage limits: for Sheets API v4, this is \
+            300 requests per minute per project, and 60 requests per minute \
+            per user."
+        )
 
-    except gspread.exceptions.GSpreadException:
-        logger.error("gpread: Something failed idk.")
-
-    sys.exit(1)
+    return spreadsheet
 
 
-def get_dataframe(
-    ws: gspread.Worksheet,
-    cellrange: str = None
+def read(
+    worksheet: gspread.Worksheet,
+    cellrange: str = None,
+    numeric=True
 ) -> pd.DataFrame:
+    """Convert a worksheet or a range of cells into a Pandas dataframe.
+    If `cellrange` is not provided, the entire worksheet is used.
+
+    A worksheet can be obtained from a spreadsheet `sheet` as
+    ```py
+    worksheet = sheet.worksheet("worksheet name")
+    ```
     """
-    Convert a range of cells of a Google Sheets worksheet into a Pandas
-    dataframe. If `cellrange` is None, the entire worksheet is converted.
-    """
+
+    logger.debug("Reading from worksheet.")
 
     if cellrange is None:
-        logger.info(
-            f"Getting all gspread records from worksheet '{ws.title}'.")
-        return pd.DataFrame(ws.get_all_records())
+        logger.debug(
+            f"Reading all records from worksheet '{worksheet.title}'.")
+        return pd.DataFrame(worksheet.get_all_records())
 
-    data = ws.get(cellrange)
+    data = worksheet.get(cellrange)
 
     headers = data[0]  # Column names
     values = data[1:]  # Actual data
@@ -86,4 +82,43 @@ def get_dataframe(
 
     df = pd.DataFrame(records)
 
+    # This is needed for sheets that represent discrete functions
+    if numeric:
+        df = df.dropna().astype(float)
+
+        df.sort_values(
+            df.columns[0],
+            inplace=True,
+        )
+
     return df
+
+
+def download(
+    filename: str,
+    sheet_id: str,
+    worksheet: gspread.Worksheet,
+    cellrange: str = None,
+    numeric=True
+) -> None:
+    """Download a worksheet or a range of cells, but don't do anything if the
+    file already exists."""
+
+    file = Path(filename)
+
+    # If the file does not exist, fetch it from Google Sheets
+    if not file.is_file() or opts.force_download:
+        sheet = open(sheet_id)
+        ws = sheet.worksheet(worksheet)
+
+        df = read(
+            ws,
+            cellrange,
+            numeric=numeric
+        )
+
+        df.to_csv(
+            file,
+            sep=pylabo.acquire.csv.opts.separator,
+            index=False  # disable extra column
+        )

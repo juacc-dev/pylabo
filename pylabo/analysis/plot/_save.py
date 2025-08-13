@@ -27,6 +27,5 @@ def save(
 
 
 def show():
-    plt.tight_layout()
     plt.show()
     plt.close()

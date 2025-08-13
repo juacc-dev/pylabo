@@ -1,5 +1,3 @@
-from . import args, logs
+from pylabo import args, logs
 
 args.parse()
-
-logs.init()

@@ -3,7 +3,7 @@ import pprint
 
 from . import funs
 
-opt_show_result = False
+opt_show_result = True
 
 
 # reduced chi-squared

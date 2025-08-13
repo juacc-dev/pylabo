@@ -1,8 +1,9 @@
-from . visa import Instrument, channel_list
 from enum import Enum
 import logging
+from pylabo.acquire.visa.visa import Instrument, channel_list
 
 logger = logging.getLogger("pylabo.visa")
+
 
 class Funs(Enum):
     SINE = "SINusoid"
@@ -40,7 +41,6 @@ class FunctionGenerator(Instrument):
             if state is not None:
                 self.write(f"OUTPut{ch}:STATe {state}")
 
-
     def config(
         self,
         ch=0,
@@ -68,13 +68,11 @@ class FunctionGenerator(Instrument):
             if impedance is not None:
                 self.write(f"OUTPut{ch}:IMPedance {impedance}")
 
-
             settings[ch] = self.query(
                 f"SOUR{ch}:VOLT;FREQ;FUNC:SHAP;:SOUR:IMP",
                 ascii=True,
                 separator=';'
             )
-
 
         logger.info(f"Fungen settings: {settings}")
         return settings
@@ -82,17 +80,13 @@ class FunctionGenerator(Instrument):
 
     #     return self.query(f"SOURce{ch}:VOLTage?")
 
-
     # def freq(self, frequency=None, ch=1):
 
     #     return self.query(f"SOURce{ch}:FREQuency?")
 
-
     # def function(self, shape: Funs|str = None, ch=1):
 
     #     return self.query(f"SOURce{ch}:FUNCtion:SHAPe?")
-
-
 
     # def impedance(self, value=None, ch=1):
 

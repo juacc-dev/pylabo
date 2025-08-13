@@ -1,12 +1,12 @@
-pyvisa_installed = False
+import logging
+logger = logging.getLogger("pylabo.acquire")
 
 try:
     import pyvisa
 
-except ImportError:
-    pyvisa_installed = True
+    import pylabo.acquire.visa.visa
+    import pylabo.acquire.visa.fungen
+    import pylabo.acquire.visa.oscil
 
-if pyvisa_installed:
-    from . visa import find_instruments, Instrument
-    from . oscil import Oscilloscope
-    from . fungen import FunctionGenerator, Funs
+except ImportError:
+    logger.error("PyVisa not installed.")

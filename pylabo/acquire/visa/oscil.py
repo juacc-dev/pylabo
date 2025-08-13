@@ -1,7 +1,7 @@
-from . visa import Instrument, channel_list
 import time
 import numpy as np
 import logging
+from pylabo.acquire.visa.visa import Instrument, channel_list
 
 logger = logging.getLogger("pylabo.visa")
 
@@ -45,7 +45,6 @@ class Oscilloscope(Instrument):
         self._instrument.read_terminator = LINE_TERMINATOR[1]
         self._instrument.write_terminator = LINE_TERMINATOR[1]
 
-
     def wait_busy(
         self,
         delay=BUSY_DELAY,
@@ -59,12 +58,11 @@ class Oscilloscope(Instrument):
         if n > max_tries:
             logger.error(f"Wait timed out! (>{max_tries * delay * 1000} ms)")
 
-
     def acquire(
         self,
         *,
         on: bool = None,
-        avg: int = None # Only supports 4, 16, 64 and 128
+        avg: int = None  # Only supports 4, 16, 64 and 128
     ) -> None:
         if avg is not None:
             self.write(f"ACQuire:MODe AVErage {avg}")
@@ -72,7 +70,6 @@ class Oscilloscope(Instrument):
         if on is not None:
             state = 1 if on is True else 0
             self.write(f"ACQuire:STATE {state}")
-
 
     # def y_scale(self, ch, scale=None):
     #     """
@@ -155,7 +152,6 @@ class Oscilloscope(Instrument):
 
     #     # return settings
 
-
     def config(
         self,
         *,
@@ -182,14 +178,15 @@ class Oscilloscope(Instrument):
                 scale = h / Y_DIVISIONS
                 self.write(f"CH{ch}:SCAle {scale:.1E}")
 
-            settings["height"][ch-1] = self.query(f"CH{ch}:SCALe?") * Y_DIVISIONS
-
+            settings["height"][ch -
+                               1] = self.query(f"CH{ch}:SCALe?") * Y_DIVISIONS
 
         for pos, ch in zip(y0s, channels):
             if h is not None:
                 self.write(f"CH{ch}:POSition {pos:.1E}")
 
-            settings["y0"][ch-1] = self.query(f"CH{ch}:POSition?") * Y_DIVISIONS
+            settings["y0"][ch -
+                           1] = self.query(f"CH{ch}:POSition?") * Y_DIVISIONS
 
         if width is not None:
             scale = width / X_DIVISIONS
@@ -204,10 +201,8 @@ class Oscilloscope(Instrument):
 
         return settings
 
-
     # def query_config(self) -> list:
     #     pass
-
 
     def curve(
         self,
@@ -227,7 +222,8 @@ class Oscilloscope(Instrument):
             separator=';'
         )
 
-        sensitivity = self.query(f"CH{ch}:SCAle?") * Y_DIVISIONS / SCREEN_HEIGHT
+        sensitivity = self.query(
+            f"CH{ch}:SCAle?") * Y_DIVISIONS / SCREEN_HEIGHT
 
         logger.info(f"Retrieved settings from channel {ch}: {settings}.")
 
@@ -267,7 +263,6 @@ class Oscilloscope(Instrument):
         logger.info(f"Oscilloscope events (channel: {ch}): {events}")
 
         return y, sigma_y
-
 
     def capture(self, ch: int = 0):
         """

@@ -1,17 +1,18 @@
 import logging
 
+
 class ConsoleFormatter(logging.Formatter):
     esc = "\x1b["
 
-    reset   = esc + "0m"
-    bold    = esc + "1m"
-    red     = esc + "31m"
-    green   = esc + "32m"
+    reset = esc + "0m"
+    bold = esc + "1m"
+    red = esc + "31m"
+    green = esc + "32m"
     # yellow  = esc + "33m"
     # blue    = esc + "34m"
     magenta = esc + "35m"
-    cyan    = esc + "36m"
-    white   = esc + "37m"
+    cyan = esc + "36m"
+    white = esc + "37m"
 
     bright_red = esc + "91m"
 
@@ -30,6 +31,7 @@ class ConsoleFormatter(logging.Formatter):
         formatter = logging.Formatter(log_fmt)
 
         return formatter.format(record)
+
 
 class FileFormatter(logging.Formatter):
     def format(self, record):

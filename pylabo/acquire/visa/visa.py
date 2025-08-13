@@ -20,6 +20,7 @@ backends = {
 
 DEFAULT_BACKEND = backends["PyVISA-Py"]
 
+
 def find_instruments():
     rm = pyvisa.ResourceManager()
 
@@ -65,10 +66,8 @@ class Instrument:
 
         self.check()
 
-
     def __del__(self):
         self._instrument.close()
-
 
     def check(self) -> bool:
         idn = self.query("*IDN?")
@@ -84,14 +83,11 @@ class Instrument:
 
             return False
 
-
     def close(self) -> None:
         self._instrument.close()
 
-
     def reset(self) -> None:
         self.write("*CLS")
-
 
     def write(
         self,
@@ -126,7 +122,6 @@ class Instrument:
             )
 
         return self._instrument.query(cmd)
-
 
     # def is_done(self) -> bool:
     #     """

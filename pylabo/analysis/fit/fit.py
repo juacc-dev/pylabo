@@ -33,8 +33,7 @@ def find(
         )
 
     except RuntimeError as e:
-        logger.warning("Failed to fit function :(.")
-        logger.warning(e)
+        logger.error(f"Failed to fit function :(. Error: [37m{e}0m")
         sys.exit(1)
 
     # Error in parameters
@@ -81,7 +80,7 @@ def func_fit(
     )
 
     if not (func is funs.linear or func is funs.linear_homog):
-        logger.warning("Non linear function. Calculating chi squared anyways.")
+        logger.info("Non linear function. Calculating chi squared anyways.")
 
     # R^2 test
     r_sq = r2(y_data, residue)
@@ -95,15 +94,15 @@ def func_fit(
         chi_sq_red
     )
 
-    if saveto is not None:
-        res = result(
-            func,
-            p_opt,
-            p_err,
-            chi_sq_red,
-            r_sq
-        )
+    res = result(
+        func,
+        p_opt,
+        p_err,
+        chi_sq_red,
+        r_sq
+    )
 
+    if saveto is not None:
         # Save result to disk
         data.save(res, filename=saveto)
 

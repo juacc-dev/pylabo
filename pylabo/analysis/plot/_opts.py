@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 logger = logging.getLogger("pylabo.plot")
 
 DEFAULT_OPTS = {
-    "font_family":  "TeX Gyre Schola:Regular",
+    "font_family":  "Noto Serif",
     "font_size":    14,
     "dir":          "plots",
     "ext":          "png",
