@@ -19,9 +19,9 @@ def chi2_r(
 # R squared
 def r2(
     y_data,
-    residuos
+    residue
 ):
-    return 1 - np.var(residuos) / np.var(y_data)
+    return 1 - np.var(residue) / np.var(y_data)
 
 
 def result(
@@ -31,7 +31,6 @@ def result(
     chi,
     r_sq
 ) -> list[dict]:
-    # Fit statistics
     stats = {
         "Chi^2 red": f"{chi}",
         "R^2": f"{r_sq}",

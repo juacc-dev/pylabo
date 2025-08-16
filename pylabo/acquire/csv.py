@@ -14,43 +14,46 @@ opts.separator = ','
 
 def load(
     filename: str,
+    sep=opts.separator,
     **kwargs
 ) -> pd.DataFrame:
     """Load a csv file. It is just a simple wrapper for Pandas."""
 
-    # df: pd.DataFrame
+    df: pd.DataFrame
 
     file = Path(filename)
 
-    # This can't be removed when generating the dataframe,
-    # it does not work for some reason.
     logger.debug(f"Reading '{file}'.")
 
     try:
-        df = pd.read_csv(file, **kwargs)
+        df = pd.read_csv(file, sep=sep, **kwargs)
 
     except FileNotFoundError:
         logger.error(f"The file '{file}' does not exist")
-
-    # print(f"Showing dataframe for file '{file}':")
-    # print(df.to_string())
 
     return df
 
 
 def save_from_dict(
     data: dict,
-    filename: Path | str
+    filename: Path | str,
+    orient: str = "columns",
+    sep=opts.separator,
+    **kwargs
 ) -> None:
     """Simple wrapper to save results stored in a dict."""
 
+    data = [data] if orient == "columns" else data
+
     # Convert dictionary to dataframe
-    df = pd.DataFrame(data)
+    df = pd.DataFrame.from_dict(data, orient=orient)
 
     logger.info(f"Saving results to '{filename}'")
 
     # Save
     df.to_csv(
         filename,
-        index=False
+        index=False if orient == "columns" else True,
+        sep=sep,
+        **kwargs
     )

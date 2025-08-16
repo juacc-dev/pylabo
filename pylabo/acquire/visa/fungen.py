@@ -2,7 +2,7 @@ from enum import Enum
 import logging
 from pylabo.acquire.visa.visa import Instrument, channel_list
 
-logger = logging.getLogger("pylabo.visa")
+logger = logging.getLogger("pylabo.acquire.visa")
 
 
 class Funs(Enum):

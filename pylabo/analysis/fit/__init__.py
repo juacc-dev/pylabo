@@ -1,1 +1,1 @@
-from . fit import func_fit, find
+from pylabo.analysis.fit.core import Function, FittedFunction, fit
