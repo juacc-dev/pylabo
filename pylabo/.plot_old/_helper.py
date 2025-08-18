@@ -3,6 +3,7 @@ from . import _typing
 
 logger = logging.getLogger("pylabo.plot")
 
+
 def get_units(label: str) -> str:
     """
     Extract units from a string.
@@ -29,6 +30,7 @@ def data_name(data) -> str | None:
 
     else:
         return None
+
 
 def axis_basic_settings(
     ax,

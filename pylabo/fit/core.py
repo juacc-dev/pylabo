@@ -4,53 +4,11 @@ import pandas as pd
 from pathlib import Path
 import logging
 
-import pylabo.acquire.csv as csv
-import pylabo.analysis.fit.funs as funs
-from pylabo.analysis.fit.utils import chi2_r, r2, result
+from pylabo.fit.function import Function, FittedFunction
+from pylabo.fit.tests import chi2_r, r2
+from pylabo.fit.funs import linear, linear_homog
 
-logger = logging.getLogger("pylabo.analysis.fit")
-
-
-class Function:
-    """
-    Mathematical function with information about the parameters.
-    """
-
-    def __init__(
-        self,
-        f,               # Callable
-        param_str: list[str],  # Parameter names
-        eq: str = None      # LaTeX formula
-    ):
-        self.f = f
-        self.params = param_str
-        self.eq = eq
-
-
-class FittedFunction(Function):
-    """
-    Function class together with numeric parameters and information about the
-    fit.
-    """
-
-    def __init__(
-        self,
-        func: Function,
-        param_val: list[float],
-        param_err: list[float],
-        residue,
-        tests
-    ):
-        super().__init__(
-            self,
-            func.f,
-            func.param_str,
-            func.eq
-        )
-        self.params = param_val
-        self.p_err = param_err
-        self.residue = residue
-        self.tests = tests
+logger = logging.getLogger("pylabo.fit")
 
 
 def fit_real(
@@ -61,12 +19,12 @@ def fit_real(
     yerr=None
 ):
     """
-    Fit a real functin (wraped in the Function class) to data using curve_fit.
+    Fit a real function (wraped in the Function class) to data using curve_fit.
     """
 
-    if not (func is funs.linear or func is funs.linear_homog) and p0 is None:
+    if p0 is None and not (func is linear or func is linear_homog):
         logger.warning(
-            "No initial parameters passed to nonlinear function."
+            "Passing no initial parameters to nonlinear function."
         )
 
     try:
@@ -144,6 +102,8 @@ def fit(
 def report(
     fit_func: FittedFunction,
 ) -> pd.DataFrame:
+    """Create a dataframe with the results of the fit: tests (like reduced chi
+    squared) and optimal parameters with their uncertainty."""
 
     # 1st column: parameter names
     names = list(fit_func.tests.keys()) + fit_func.param_str

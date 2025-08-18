@@ -5,9 +5,9 @@ from pathlib import Path
 import logging
 import os
 from pylabo.lib.opts import Options
-import pylabo.acquire.csv
+import pylabo.csv
 
-logger = logging.getLogger("pylabo.acquire.sheets")
+logger = logging.getLogger("pylabo.sheets")
 
 opts = Options()
 opts.force_download = False
@@ -119,6 +119,6 @@ def download(
 
         df.to_csv(
             file,
-            sep=pylabo.acquire.csv.opts.separator,
+            sep=pylabo.csv.opts.separator,
             index=False  # disable extra column
         )

@@ -1,8 +1,8 @@
 from enum import Enum
 import logging
-from pylabo.acquire.visa.visa import Instrument, channel_list
+from pylabo.visa.visa import Instrument, channel_list
 
-logger = logging.getLogger("pylabo.acquire.visa")
+logger = logging.getLogger("pylabo.visa")
 
 
 class Funs(Enum):

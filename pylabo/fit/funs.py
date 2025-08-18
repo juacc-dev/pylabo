@@ -1,6 +1,6 @@
 import numpy as np
 # from scipy import special
-from pylabo.analysis.fit import Function
+from pylabo.fit.function import Function
 
 
 constant = Function(

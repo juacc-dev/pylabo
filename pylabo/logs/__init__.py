@@ -2,15 +2,15 @@
 # https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
 
 import logging
-from lib.opts import Options
+from pylabo.lib.opts import Options
 from pylabo.logs.formatter import ConsoleFormatter, FileFormatter
 
 logger = logging.getLogger("pylabo.logs")
 
 opts = Options()
-opts.level_console = logging.INFO,
-opts.level_file = logging.DEBUG,
-opts.logfile = None,
+opts.level_console = logging.INFO
+opts.level_file = logging.DEBUG
+opts.logfile = None
 
 handlers = []
 

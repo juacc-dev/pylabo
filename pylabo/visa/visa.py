@@ -11,7 +11,7 @@
 import pyvisa
 import logging
 
-logger = logging.getLogger("pylabo.acquire.visa")
+logger = logging.getLogger("pylabo.visa")
 
 backends = {
     "NI-VISA": "",

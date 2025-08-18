@@ -8,6 +8,7 @@ from . _typing import Any, Figure
 
 logger = logging.getLogger("pylabo.plot")
 
+
 def data(
     x_data: Any,
     y_data: Any | tuple[Any],
@@ -47,7 +48,8 @@ def data(
     multiplot = False if not isinstance(y_data, tuple) else len(y_data)
 
     if multiplot:
-        logger.info(f"Doing multiple plots, y_data is of lenght {len(y_data)}.")
+        logger.info(f"Doing multiple plots, y_data is of lenght {
+                    len(y_data)}.")
 
     if not multiplot and separate_rows:
         logger.warning(

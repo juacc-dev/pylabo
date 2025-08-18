@@ -1,3 +1,4 @@
-from pylabo import args, logs
+import pylabo.logs
+import pylabo.args
 
-args.parse()
+pylabo.args.parse()

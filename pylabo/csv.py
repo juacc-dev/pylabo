@@ -5,9 +5,6 @@ from lib.opts import Options
 
 logger = logging.getLogger("pylabo.csv")
 
-DATA_DIR = "data"
-RESULTS_DIR = "results"
-
 opts = Options()
 opts.separator = ','
 
