@@ -1,7 +1,7 @@
 import sys
 import getopt
 import logging
-import pylabo.logs as logs
+import pylabo.lib.logs as logs
 
 logger = logging.getLogger("pylabo.args")
 

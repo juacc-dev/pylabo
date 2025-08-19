@@ -96,6 +96,7 @@ class FittedFunction(Function):
         param_val: list[float],  # Optimal parameters
         param_cov: list[float],  # Covariance matrix
         param_err: list[float],  # Parameter uncertainty
+        xlim: tuple[float],      # Interval of the data
         residue,                 # y_data - y_fit
         tests: dict[str, float]  # chi squared and stuff
     ):
@@ -108,5 +109,6 @@ class FittedFunction(Function):
 
         self.params = param_val
         self.p_err = param_err
+        self.xlim = xlim
         self.residue = residue
         self.tests = tests

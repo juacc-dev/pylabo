@@ -89,6 +89,7 @@ def fit(
         func,
         p_opt,
         p_err,
+        (x_data.min(), x_data.max()),
         residue,
         {
             "chi2r": chi,
