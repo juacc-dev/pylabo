@@ -7,3 +7,16 @@ def fmt_choice(n_points: int):
 
     else:
         return "."
+
+
+def axis_setup(
+    ax,
+    xlabel=None,
+    ylabel=None,
+):
+    ax.grid(True)
+    ax.legend()
+    ax.set(
+        xlabel=xlabel,
+        ylabel=ylabel
+    )

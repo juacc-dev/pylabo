@@ -14,7 +14,7 @@ class Function:
         eq: str = None      # LaTeX formula
     ):
         self.f = f
-        self.params = param_str
+        self.param_str = param_str
         self.eq = eq
 
     def __add__(self, other):
@@ -98,17 +98,17 @@ class FittedFunction(Function):
         param_err: list[float],  # Parameter uncertainty
         xlim: tuple[float],      # Interval of the data
         residue,                 # y_data - y_fit
-        tests: dict[str, float]  # chi squared and stuff
+        tests=None               # table with chi squared and stuff
     ):
         super().__init__(
-            self,
             func.f,
             func.param_str,
             func.eq
         )
 
-        self.params = param_val
-        self.p_err = param_err
+        self.param_val = param_val
+        self.param_cov = param_cov
+        self.param_err = param_err
         self.xlim = xlim
         self.residue = residue
         self.tests = tests

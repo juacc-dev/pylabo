@@ -6,7 +6,7 @@ from matplotlib.axes import Axes
 
 import pylabo.fit
 
-from pylabo.plot.core import split_axes
+from pylabo.lib.split_axes import split_axes
 from pylabo.plot.utils import fmt_choice
 from pylabo.lib.utils import set_if_none
 
@@ -26,7 +26,7 @@ def fit(
     To plot the fit on top of the data, use stacked() or combined() first.
     """
 
-    n_points = 8 * plt.rcParams["figure.dpi"]
+    n_points = int(8 * plt.rcParams["figure.dpi"])
 
     x_fit = np.linspace(*fit_func.xlim, n_points)
     y_fit = fit_func.f(x_fit, *fit_func.param_val)

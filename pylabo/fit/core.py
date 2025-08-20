@@ -1,12 +1,12 @@
 from scipy.optimize import curve_fit
 import numpy as np
 import pandas as pd
-from pathlib import Path
 import logging
 
 from pylabo.fit.function import Function, FittedFunction
 from pylabo.fit.tests import chi2_r, r2
 from pylabo.fit.funs import linear, linear_homog
+from pylabo.lib.split_axes import split_single
 
 logger = logging.getLogger("pylabo.fit")
 
@@ -41,26 +41,23 @@ def fit_real(
         logger.error(f"Failed to fit function. Error: {e}")
         return None, None
 
-    # Error in parameters
-    param_err = np.sqrt(np.diag(param_cov))
-
-    return param_opt, param_err
+    return param_opt, param_cov
 
 
 def fit(
     func: Function,
-    x_data,
-    y_data,
+    df: pd.DataFrame,
     p0=None,
-    yerr=None,
-    saveto: Path | str = None,
+    no_xerr=False
 ) -> FittedFunction:
     """
     Fit a function to data.
     Returns an object containing all information about the result.
     """
 
-    p_opt, p_err = fit_real(
+    x_data, _, y_data, yerr = split_single(df, no_xerr=no_xerr)
+
+    p_opt, p_cov = fit_real(
         func,
         x_data,
         y_data,
@@ -68,8 +65,11 @@ def fit(
         yerr=yerr
     )
 
-    if p_opt is None and p_err is None:
+    if p_opt is None and p_cov is None:
         return None
+
+    # Error in parameters
+    p_err = np.sqrt(np.diag(p_cov))
 
     y_fit = func.f(x_data, *p_opt)
 
@@ -88,10 +88,11 @@ def fit(
     fit_func = FittedFunction(
         func,
         p_opt,
+        p_cov,
         p_err,
         (x_data.min(), x_data.max()),
         residue,
-        {
+        tests={
             "chi2r": chi,
             "R2": r_sq
         }

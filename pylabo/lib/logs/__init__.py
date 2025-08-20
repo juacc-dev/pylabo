@@ -3,7 +3,7 @@
 
 import logging
 from pylabo.lib.opts import Options
-from pylabo.logs.formatter import ConsoleFormatter, FileFormatter
+from pylabo.lib.logs.formatter import ConsoleFormatter, FileFormatter
 
 logger = logging.getLogger("pylabo.logs")
 

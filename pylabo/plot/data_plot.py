@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import logging
 from matplotlib.axes import Axes
 
-from pylabo.plot.core import split_axes
-from pylabo.plot.utils import fmt_choice
+from pylabo.lib.split_axes import split_axes
+from pylabo.plot.utils import fmt_choice, axis_setup
 from pylabo.lib.utils import set_if_none
 
 logger = logging.getLogger("pylabo.plot")
@@ -44,7 +44,7 @@ def stacked(
     # fmt may be 'o' or '.' depending on the number of points
     fmt = set_if_none(fmt, fmt_choice(x_axis.size))
 
-    ax[0].set_xlabel(x_axis.name)
+    ax[-1].set_xlabel(x_axis.name)
 
     for axis, y_axis, y_err in zip(ax, y_axes, y_errs):
         axis.errorbar(
@@ -56,7 +56,8 @@ def stacked(
             **kwargs
         )
 
-        axis.set(
+        axis_setup(
+            axis,
             ylabel=y_axis
         )
 
@@ -77,7 +78,7 @@ def combined(
 
     x_axis, x_err, y_axes, y_errs = split_axes(df, no_xerr=no_xerr)
 
-    rows = len(y_axes)
+    rows = 1
     cols = 1
 
     # fig and ax may be passed. If not, create them
@@ -97,10 +98,8 @@ def combined(
     # fmt may be 'o' or '.' depending on the number of points
     fmt = set_if_none(fmt, fmt_choice(x_axis.size))
 
-    ax.set(
-        xlabel=x_axis.name,
-        ylabel=ylabel
-    )
+    ax.set_xlabel(xlabel=x_axis.name)
+    ax.set_ylabel(ylabel=ylabel)
 
     for y_axis, y_err in zip(y_axes, y_errs):
         ax.errorbar(
