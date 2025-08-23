@@ -1,4 +1,10 @@
+import pandas as pd
+
+
 def split_params(n, x, *args):
+    """Function for internal use. It's common functionality for operator
+    overloading."""
+
     return args[:n], args[n:]
 
 
@@ -26,8 +32,7 @@ class Function:
 
         return Function(
             f,
-            self.param_str + other.param_str,
-            "Equation not supported"
+            self.param_str + other.param_str
         )
 
     def __sub__(self, other):
@@ -39,8 +44,7 @@ class Function:
 
         return Function(
             f,
-            self.param_str + other.param_str,
-            "Equation not supported"
+            self.param_str + other.param_str
         )
 
     def __mul__(self, other):
@@ -52,8 +56,7 @@ class Function:
 
         return Function(
             f,
-            self.param_str + other.param_str,
-            "Equation not supported"
+            self.param_str + other.param_str
         )
 
     def __truediv__(self, other):
@@ -65,8 +68,7 @@ class Function:
 
         return Function(
             f,
-            self.param_str + other.param_str,
-            "Equation not supported"
+            self.param_str + other.param_str
         )
 
     # This is function composition: f & g -> f(g(x))
@@ -79,8 +81,7 @@ class Function:
 
         return Function(
             f,
-            self.param_str + other.param_str,
-            "Equation not supported"
+            self.param_str + other.param_str
         )
 
 
@@ -96,7 +97,6 @@ class FittedFunction(Function):
         param_val: list[float],  # Optimal parameters
         param_cov: list[float],  # Covariance matrix
         param_err: list[float],  # Parameter uncertainty
-        xlim: tuple[float],      # Interval of the data
         residue,                 # y_data - y_fit
         tests=None               # table with chi squared and stuff
     ):
@@ -109,6 +109,28 @@ class FittedFunction(Function):
         self.param_val = param_val
         self.param_cov = param_cov
         self.param_err = param_err
-        self.xlim = xlim
         self.residue = residue
         self.tests = tests
+
+    def report(self) -> pd.DataFrame:
+        """Create a dataframe with the results of the fit: tests (like reduced
+        chi squared) and optimal parameters, the latter with their uncertainty.
+        """
+
+        # 1st column: parameter names
+        names = list(self.tests.keys()) + self.param_str
+
+        # 2nd column: values / optimal values
+        values = list(self.tests.values()) + list(self.param_val)
+
+        # 3rd column: uncertainty. Tests don't have any
+        errors = [None for _ in range(
+            len(self.tests))] + list(self.param_err)
+
+        df = pd.DataFrame({
+            "Parámetro": pd.Series(names),
+            "Valor": pd.Series(values),
+            "Error": pd.Series(errors)
+        })
+
+        return df

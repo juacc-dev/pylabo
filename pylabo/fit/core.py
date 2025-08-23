@@ -45,20 +45,19 @@ def fit_real(
 
 
 def fit(
-    func: Function,
+    model: Function,
     df: pd.DataFrame,
-    p0=None,
-    no_xerr=False
+    p0=None
 ) -> FittedFunction:
     """
     Fit a function to data.
     Returns an object containing all information about the result.
     """
 
-    x_data, _, y_data, yerr = split_single(df, no_xerr=no_xerr)
+    x_data, _, y_data, yerr = split_single(df)
 
     p_opt, p_cov = fit_real(
-        func,
+        model,
         x_data,
         y_data,
         p0=p0,
@@ -71,7 +70,7 @@ def fit(
     # Error in parameters
     p_err = np.sqrt(np.diag(p_cov))
 
-    y_fit = func.f(x_data, *p_opt)
+    y_fit = model.f(x_data, *p_opt)
 
     residue = y_fit - y_data
 
@@ -86,11 +85,10 @@ def fit(
 
     # New Function object
     fit_func = FittedFunction(
-        func,
+        model,
         p_opt,
         p_cov,
         p_err,
-        (x_data.min(), x_data.max()),
         residue,
         tests={
             "chi2r": chi,
@@ -99,27 +97,3 @@ def fit(
     )
 
     return fit_func
-
-
-def report(
-    fit_func: FittedFunction,
-) -> pd.DataFrame:
-    """Create a dataframe with the results of the fit: tests (like reduced chi
-    squared) and optimal parameters with their uncertainty."""
-
-    # 1st column: parameter names
-    names = list(fit_func.tests.keys()) + fit_func.param_str
-
-    # 2nd column: values / optimal values
-    values = list(fit_func.tests.values()) + fit_func.param_val
-
-    # 3rd column: uncertainty. Tests don't have any
-    errors = [None for _ in range(len(fit_func.tests))] + fit_func.param_val
-
-    df = pd.DataFrame({
-        "Parámetro": pd.Series(names),
-        "Valor": pd.Series(values),
-        "Error": pd.Series(errors)
-    })
-
-    return df
