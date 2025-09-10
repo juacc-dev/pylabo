@@ -8,4 +8,4 @@ plt.rcParams["font.family"] = "Noto Serif"
 plt.rcParams["font.size"] = "14"
 
 opts = Options()
-opts.fmt_n_points = 10
+opts.fmt_n_points = 200

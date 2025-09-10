@@ -12,10 +12,10 @@ def axes_are_bad(ax, n=1):
 
 def fmt_choice(n_points: int):
     if n_points < opts.fmt_n_points:
-        return "o"
+        return "."
 
     else:
-        return "."
+        return "-"
 
 
 def axis_setup(

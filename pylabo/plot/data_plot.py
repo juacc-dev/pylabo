@@ -57,15 +57,31 @@ def data(
     # If there is no uncertainty in X, don't plot it
     x_err = x_err if not x_err.isna().all() else None
 
-    ax.errorbar(
-        x_axis,
-        y_axis,
-        xerr=x_err,
-        yerr=y_err,
-        label=label,
-        fmt=fmt,
-        **kwargs
-    )
+    if fmt == '.':
+        ax.errorbar(
+            x_axis,
+            y_axis,
+            xerr=x_err,
+            yerr=y_err,
+            label=label,
+            fmt=fmt,
+            **kwargs
+        )
+
+    else:
+        ax.plot(
+            x_axis,
+            y_axis,
+            fmt,
+            label=label,
+            **kwargs
+        )
+        ax.fill_between(
+            x_axis,
+            y_axis - y_err,
+            y_axis + y_err,
+            alpha=0.5
+        )
 
     return fig, ax
 

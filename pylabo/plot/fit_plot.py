@@ -83,18 +83,23 @@ def residue(
 
         return None, None
 
-    # fmt may be 'o' or '.' depending on the number of points
-    fmt = set_if_none(fmt, fmt_choice(x_axis.size))
     ylabel = set_if_none(ylabel, "Residuos")
 
     # If there is no uncertainty in X, don't plot it
     x_err = x_err if not x_err.isna().all() else None
+
+    ax.axhline(
+        y=0,
+        color="black",
+        alpha=0.9
+    )
 
     ax.errorbar(
         x_axis,
         fit_func.residue,
         xerr=x_err,
         yerr=y_err,
+        fmt='.',
         **kwargs
     )
 
