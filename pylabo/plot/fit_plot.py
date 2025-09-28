@@ -4,10 +4,9 @@ import numpy as np
 import logging
 
 import pylabo.fit
-from pylabo.lib.split_axes import split_single
-from pylabo.lib.utils import set_if_none
+from pylabo.lib.utils import set_if_none, split_axes
 from pylabo.plot.data_plot import data
-from pylabo.plot.utils import axis_is_bad, axes_are_bad, fmt_choice, axis_setup
+from pylabo.plot.utils import axis_bad_type, axes_bad_type
 
 logger = logging.getLogger("pylabo.plot")
 
@@ -17,13 +16,12 @@ def fitted(
     fit_func: pylabo.fit.FittedFunction,
     ax=None,
     label=None,
-    fmt=None,
     **kwargs
 ):
     """
     Plot the fitted function. More points are used as to draw a smooth curve.
     """
-    x_axis, _, _, _ = split_single(df)
+    x_axis, _, _, _ = split_axes(df)
 
     n_points = int(8 * plt.rcParams["figure.dpi"])
 
@@ -38,10 +36,12 @@ def fitted(
             1,
         )
 
-    elif axis_is_bad(ax):
+    elif axis_bad_type(ax):
         logger.error("Invalid axes argument.")
 
         return None, None
+
+    label = set_if_none(label, set_if_none(fit_func.eq, "Ajuste"))
 
     ax.plot(
         x_fit,
@@ -58,35 +58,17 @@ def residue(
     ax=None,
     fmt=None,
     ylabel=None,
-    **kwargs
+    # **kwargs
 ):
     """Plot the residue from a fit."""
 
-    x_axis, x_err, _, y_err = split_single(df)
+    x_axis, xerr, _, yerrs = split_axes(df)
+    yerr = yerrs[0]
 
-    fig = None
-
-    if ax is None:
-        fig, ax = plt.subplots(
-            1,
-            1,
-        )
-
-        axis_setup(
-            ax,
-            xlabel=x_axis.name,
-            ylabel=ylabel
-        )
-
-    elif axis_is_bad(ax):
-        logger.error("Invalid axes argument.")
-
-        return None, None
-
-    ylabel = set_if_none(ylabel, "Residuos")
+    # ylabel = set_if_none(ylabel, "Residuos")
 
     # If there is no uncertainty in X, don't plot it
-    x_err = x_err if not x_err.isna().all() else None
+    xerr = xerr if not xerr.isna().all() else None
 
     ax.axhline(
         y=0,
@@ -97,16 +79,16 @@ def residue(
     ax.errorbar(
         x_axis,
         fit_func.residue,
-        xerr=x_err,
-        yerr=y_err,
+        xerr=xerr,
+        yerr=yerr,
         fmt='.',
-        **kwargs
+        # **kwargs
     )
 
-    return fig, ax
+    return ax
 
 
-def fulfit(
+def datafit(
     df: pd.DataFrame,
     fit_func: pylabo.fit.FittedFunction,
     ax=None,
@@ -117,7 +99,8 @@ def fulfit(
 ):
     """Plot dataframe, fitted function and residue."""
 
-    x_axis, _, y_axis, _ = split_single(df)
+    x_axis, _, ys, _ = split_axes(df)
+    y_axis = ys[0]
 
     fig = None
 
@@ -129,17 +112,15 @@ def fulfit(
             height_ratios=height_ratios
         )
 
-        axis_setup(
-            ax[0],
+        ax[0].set(
             ylabel=y_axis.name
         )
-        axis_setup(
-            ax[1],
+        ax[1].set(
             xlabel=x_axis.name,
             ylabel="Residuos"
         )
 
-    elif axes_are_bad(ax, n=2):
+    elif axes_bad_type(ax, n=2):
         logger.error("Invalid axes argument.")
         return None, None
 
@@ -155,7 +136,7 @@ def fulfit(
         fit_func,
         ax=ax[0],
         fmt=fmt,
-        label=set_if_none(fitlabel, set_if_none(fit_func.eq, "Ajuste"))
+        label=fitlabel
     )
 
     ax[0].legend()
@@ -164,7 +145,6 @@ def fulfit(
         df,
         fit_func,
         ax=ax[1],
-        fmt=fmt
     )
 
     return fig, ax

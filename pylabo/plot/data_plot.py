@@ -1,13 +1,98 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import logging
-from matplotlib.axes import Axes
 
-from pylabo.lib.split_axes import split_axes, split_single
-from pylabo.lib.utils import set_if_none
-from pylabo.plot.utils import axes_are_bad, axis_is_bad, fmt_choice, axis_setup
+from pylabo.lib.utils import split_axes, set_if_none
+from pylabo.plot.utils import axes_bad_type, axis_bad_type, fmt_choice
 
 logger = logging.getLogger("pylabo.plot")
+
+
+def _plot(
+    ax,
+    x_axis,
+    y_axis,
+    xerr,
+    yerr,
+    fmt,
+    label=None,
+    **kwargs
+):
+    if fmt == '.':
+        ax.errorbar(
+            x_axis,
+            y_axis,
+            xerr=xerr,
+            yerr=yerr,
+            label=label,
+            fmt=fmt,
+            **kwargs
+        )
+
+    else:
+        ax.errorbar(
+            x_axis,
+            y_axis,
+            xerr=xerr,
+            yerr=yerr,
+            label=label,
+            elinewidth=0.5,
+            capsize=0,
+            fmt=fmt,
+            **kwargs
+        )
+        # ax.plot(
+        #     x_axis,
+        #     y_axis,
+        #     fmt,
+        #     label=label,
+        #     **kwargs
+        # )
+        # ax.fill_between(
+        #     x_axis,
+        #     y_axis - y_err,
+        #     y_axis + y_err,
+        #     alpha=0.5
+        # )
+
+
+def create_ax(
+    rows, cols,
+    x_axis,
+    ys,
+    xlabel,
+    ylabel,
+    labels,
+    stacked
+):
+    fig, ax = plt.subplots(
+        rows,
+        cols,
+        sharex=stacked
+    )
+
+    xlabel = set_if_none(xlabel, x_axis.name)
+
+    if stacked:
+        ax[-1].set(
+            xlabel=xlabel,
+        )
+
+        ylabels = set_if_none(labels, [y.name for y in ys])
+
+        for axis, ylabel in zip(ax, ylabels):
+            axis.set(ylabel=ylabel)
+
+    else:
+        ax.set(xlabel=xlabel)
+
+        if len(ys) == 1:
+            ylabel = set_if_none(ylabel, ys[0].name)
+            ax.set(
+                ylabel=ylabel
+            )
+
+    return fig, ax
 
 
 def data(
@@ -15,198 +100,145 @@ def data(
     ax=None,
     label=None,
     fmt=None,
+    xlabel=None,
+    ylabel=None,
+    labels=None,  # For multiple dependent variables
+    stacked=False,
     **kwargs
 ):
-    """Plot data from dataframe representing a function of one variable.
-    The following structure is assumed:
+    """Plot data from dataframe representing a function. The following
+    structure is assumed:
      - 1st column is the independent variable,
      - 2nd is the uncertainty in the independent variable,
-     - 3rd is the dependent variable,
-     - 4nd is the uncertainty in the dependent variable.
+     - odd columns following are dependent variables,
+     - even columns following are the uncertainty in the previous dependent
+       variable.
+    The 2nd column (X error) can be empty, but it has to be there.
+    Pass `stacked=True` to draw each column in a separate row.
+    """
 
-    Other columns are ignored. The 2nd column (X error) can be empty, but it
-    has to be there. """
+    x_axis, xerr, ys, yerrs = split_axes(df)
 
-    x_axis, x_err, y_axis, y_err = split_single(df)
+    if len(ys) == 1:
+        stacked = False
+
+    # If there is no uncertainty in X, don't plot it
+    xerr = xerr if not xerr.isna().all() else None
 
     fig = None
 
+    rows = len(ys) if stacked else 1
+    cols = 1
+
     # ax may be passed. If not, create a new figure
     if ax is None:
-        fig, ax = plt.subplots(
-            1,
-            1,
+        fig, ax = create_ax(
+            rows,
+            cols,
+            x_axis,
+            ys,
+            xlabel,
+            ylabel,
+            labels,
+            stacked
         )
 
-        axis_setup(
-            ax,
-            xlabel=x_axis.name,
-            ylabel=y_axis.name
-        )
-
-    # If passed, ax shuold have the right dimension
-    elif axis_is_bad(ax):
-        logger.error("Invalid axes argument.")
-
-        return None, None
-
-    # If no fmt is passed, it may be 'o' or '.' depending on the number of
+    # If no fmt is passed, it may be '-' or '.' depending on the number of
     # points
     fmt = set_if_none(fmt, fmt_choice(x_axis.size))
 
-    # If there is no uncertainty in X, don't plot it
-    x_err = x_err if not x_err.isna().all() else None
-
-    if fmt == '.':
-        ax.errorbar(
+    if stacked:
+        stack_plot(
+            ax,
             x_axis,
-            y_axis,
-            xerr=x_err,
-            yerr=y_err,
-            label=label,
-            fmt=fmt,
+            ys,
+            xerr,
+            yerrs,
+            fmt,
             **kwargs
         )
 
     else:
-        ax.plot(
+        combine_plot(
+            ax,
+            x_axis,
+            ys,
+            xerr,
+            yerrs,
+            fmt,
+            labels,
+            **kwargs
+        )
+
+        plt.legend()
+
+    return fig, ax
+
+
+def combine_plot(
+    ax,
+    x_axis,
+    ys,
+    xerr,
+    yerrs,
+    fmt,
+    labels,
+    **kwargs
+):
+    # If passed, ax shuold have the right dimension
+    if axis_bad_type(ax):
+        logger.error("Invalid axis argument.")
+
+        return None, None
+
+    if len(ys) == 1:
+        labels = [None]
+
+    else:
+        labels = set_if_none(labels, [y.name for y in ys])
+
+    for y_axis, yerr, label in zip(ys, yerrs, labels):
+        _plot(
+            ax,
             x_axis,
             y_axis,
+            xerr,
+            yerr,
             fmt,
             label=label,
             **kwargs
         )
-        ax.fill_between(
-            x_axis,
-            y_axis - y_err,
-            y_axis + y_err,
-            alpha=0.5
-        )
 
-    return fig, ax
+    return ax
 
 
-def combined(
-    df: pd.DataFrame,
-    ax=None,
-    fmt=None,
-    ylabel=None,
+def stack_plot(
+    ax,
+    x_axis,
+    y_axes,
+    xerr,
+    yerrs,
+    fmt,
     **kwargs
 ):
-    """Multiple plot data from dataframe, each variable is drawn on top the the
-    other.
-    The following structure is assumed:
-     - 1st column is the independent variable,
-     - 2nd is the uncertainty in the independent variable,
-     - odd columns following are dependent variables,
-     - even columns following are the uncertainty in the previous dependent
-       variable.
-    The 2nd column (X error) can be empty, but it has to be there."""
-
-    x_axis, x_err, y_axes, y_errs = split_axes(df)
-
-    rows = 1
-    cols = 1
-
-    fig = None
-
-    # ax may be passed. If not, create a new figure
-    if ax is None:
-        fig, ax = plt.subplots(
-            rows,
-            cols,
-            sharex=False
-        )
-
-        axis_setup(
-            ax,
-            xlabel=x_axis.name,
-            ylabel=ylabel
-        )
-
     # If passed, ax shuold have the right dimension
-    elif axis_is_bad(ax):
-        logger.error("Invalid axes argument.")
-
-        return None, None
-
-    # fmt may be 'o' or '.' depending on the number of points
-    fmt = set_if_none(fmt, fmt_choice(x_axis.size))
-
-    # If there is no uncertainty in X, don't plot it
-    x_err = x_err if not x_err.isna().all() else None
-
-    for y_axis, y_err in zip(y_axes, y_errs):
-        ax.errorbar(
-            x_axis,
-            df[y_axis],
-            xerr=x_err,
-            yerr=df[y_err],
-            fmt=fmt,
-            label=y_axis,
-            **kwargs
+    if axes_bad_type(ax, n=len(y_axes)):
+        logger.error(
+            f"Invalid axes argument. Expected list of {len(y_axes)} axes."
         )
 
-    return fig, ax
+        return None
 
-
-def stacked(
-    df: pd.DataFrame,
-    ax=None,
-    fmt=None,
-    **kwargs
-):
-    """Multiple plot data from dataframe, each variable is drawn on a separate
-    plot, sharing the X axis.
-    The following structure is assumed:
-     - 1st column is the independent variable,
-     - 2nd is the uncertainty in the independent variable,
-     - odd columns following are dependent variables,
-     - even columns following are the uncertainty in the previous dependent
-       variable.
-    The 2nd column (X error) can be empty, but it has to be there."""
-
-    x_axis, x_err, y_axes, y_errs = split_axes(df)
-
-    rows = len(y_axes)
-    cols = 1
-
-    fig = None
-
-    # ax may be passed. If not, create a new figure
-    if ax is None:
-        fig, ax = plt.subplots(
-            rows,
-            cols,
-            sharex=True
-        )
-
-    # If passed, ax shuold have the right dimension
-    elif axes_are_bad(ax, n=len(y_axes.columns)):
-        logger.error("Invalid axes argument")
-
-        return None, None
-
-    # fmt may be 'o' or '.' depending on the number of points
-    fmt = set_if_none(fmt, fmt_choice(x_axis.size))
-
-    # If there is no uncertainty in X, don't plot it
-    x_err = x_err if not x_err.isna().all() else None
-
-    ax[-1].set_xlabel(x_axis.name)
-
-    for axis, y_axis, y_err in zip(ax, y_axes, y_errs):
-        axis.errorbar(
-            x_axis,
-            df[y_axis],
-            xerr=x_err,
-            yerr=df[y_err],
-            **kwargs
-        )
-
-        axis_setup(
+    for axis, y_axis, yerr in zip(ax, y_axes, yerrs):
+        _plot(
             axis,
-            ylabel=y_axis
+            x_axis,
+            y_axis,
+            xerr,
+            yerr,
+            fmt,
+            label=None,
+            **kwargs
         )
 
-    return fig, ax
+    return ax
