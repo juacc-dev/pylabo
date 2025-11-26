@@ -2,11 +2,12 @@ from scipy.optimize import curve_fit
 import numpy as np
 import pandas as pd
 import logging
+import sys
 
 from pylabo.fit.function import Function, FittedFunction
 from pylabo.fit.tests import chi2_r, r2, p_value
 from pylabo.fit.funs import linear, linear_homog
-from pylabo.lib.utils import split_axes
+from pylabo.lib.utils import interpret_df
 
 logger = logging.getLogger("pylabo.fit")
 
@@ -40,7 +41,7 @@ def fit_real(
 
     except RuntimeError as e:
         logger.error(f"Failed to fit function. Error: {e}")
-        return None, None
+        sys.exit(-1)
 
     return param_opt, param_cov
 
@@ -56,14 +57,15 @@ def fit(
     Returns an object containing all information about the result.
     """
 
-    x_data, _, ys, yerrs = split_axes(df)
-
-    y_data = ys[0]
-    yerr = ys[0]
+    x_data, _, y_data, yerr = interpret_df(df)
 
     # The dataframe should contain X and Y axes, each with their uncertainty
-    if len(ys) != 1:
-        logger.warning(f"Expected one dependent variable, got {len(ys)}.")
+    if len(y_data) != 1:
+        logger.warning(f"Expected one dependent variable, got {len(y_data)}.")
+
+    x_data = x_data[0]
+    y_data = y_data[0]
+    yerr = yerr[0]
 
     yerr = yerr if not yerr.isna().all() else None
 

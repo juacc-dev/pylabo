@@ -1,4 +1,7 @@
 import pandas as pd
+import logging
+
+logger = logging.getLogger("pylabo.lib.utils")
 
 
 def set_if_none(value, default):
@@ -9,60 +12,53 @@ def insert_empty_xerr(df):
     df.insert(1, "", pd.Series())
 
 
-def split_axes(
-    df: pd.DataFrame
+def interpret_df(
+    df: pd.DataFrame,
+    shape: tuple = (1, None)  # (independent vars, dependent vars)
 ):
-    """Get axes from dataframe assuming a struture with an independent variable
-    X and n dependent variables Y_i, all together with their uncertainty, the
-    csv column names would be
+    """Get axes from dataframe assuming a struture with N independent variables
+    X_i and M dependent variables Y_j, each with their uncertainty, the csv
+    column names would be
     ```csv
-    X,X err,Y_1,Y_1 err,Y_2,Y_2 err,...
+    X_1,X_1 err, ... ,X_N, X_N err, Y_1,Y_1 err, ... ,Y_M,Y_M err
     ```
-    The column for X err has to be there, but it can be empty."""
+    By default, assume 1 independent variable and the rest dependent."""
 
     cols = df.columns  # list with column names
 
-    # X axis and possibly its uncertainty
-    x = df[cols[0]]
-    xerr = df[cols[1]]
+    N = shape[0]
+    M = shape[1]
+
+    if N is None and M is None:
+        logger.error(f"Invalid shape: {shape}")
+        raise Exception
+
+    if N is None:
+        N = len(cols) - M
+
+    if M is None:
+        M = len(cols) - N
+
+    if N + M > len(cols):
+        logger.error(f"Invalid shape: {shape}")
+        raise Exception
+
+    # X axes and its uncertainty
+    x = [df[col] for col in cols[0:2 * N:2]]
+    xerr = [df[col] for col in cols[1:2 * N:2]]
 
     # Y axes and their uncertainty
-    ys = [df[col] for col in cols[2::2]]
-    yerrs = [df[col] for col in cols[3::2]]
+    y = [df[col] for col in cols[2 * N:2 * (N + M):2]]
+    yerr = [df[col] for col in cols[2 * N + 1:2 * (N + M):2]]
 
-    return x, xerr, ys, yerrs
-
-
-# def split_df(
-#     df: pd.DataFrame
-# ):
-#     """Get axes from dataframe assuming a struture with one independent
-#     variable X and one dependent variables Y, each with their uncertainty, the
-#     csv column names would just be
-#     ```csv
-#     X,X err,Y_1,Y_1 err
-#     ```
-#     The column for X err has to be there, but it can be empty."""
-
-#     cols = df.columns  # list with column names
-
-#     # X axis and possibly its uncertainty
-#     x = df[cols[0]]
-#     xerr = df[cols[1]]
-
-#     # Y axes and their uncertainty
-#     y = df[cols[2]]
-#     yerr = df[cols[3]]
-
-#     return x, xerr, y, yerr
+    return x, xerr, y, yerr
 
 
 def unpack_df(
     df: pd.DataFrame
 ):
-    x, xerr, ys, yerrs = split_axes(df)
+    cols = df.columns  # list with column names
 
-    y_list = [ys[col] for col in ys.columns]
-    yerr_list = [yerrs[col] for col in yerrs.columns]
+    data = (df[col] for col in cols)
 
-    return x, xerr, *y_list, *yerr_list
+    return data

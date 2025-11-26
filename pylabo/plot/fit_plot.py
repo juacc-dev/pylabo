@@ -4,9 +4,9 @@ import numpy as np
 import logging
 
 import pylabo.fit
-from pylabo.lib.utils import set_if_none, split_axes
+from pylabo.lib.utils import set_if_none, interpret_df
 from pylabo.plot.data_plot import data
-from pylabo.plot.utils import axis_bad_type, axes_bad_type
+from pylabo.plot.utils import axis_bad_type
 
 logger = logging.getLogger("pylabo.plot")
 
@@ -21,7 +21,9 @@ def fitted(
     """
     Plot the fitted function. More points are used as to draw a smooth curve.
     """
-    x_axis, _, _, _ = split_axes(df)
+    x_axes, _, _, _ = interpret_df(df, shape=(1, None))
+
+    x_axis = x_axes[0]
 
     n_points = int(8 * plt.rcParams["figure.dpi"])
 
@@ -46,7 +48,8 @@ def fitted(
     ax.plot(
         x_fit,
         y_fit,
-        label=label
+        label=label,
+        **kwargs
     )
 
     return fig, ax
@@ -58,17 +61,25 @@ def residue(
     ax=None,
     fmt=None,
     ylabel=None,
-    # **kwargs
+    label=None,
+    no_yerr=False,
+    **kwargs
 ):
     """Plot the residue from a fit."""
 
-    x_axis, xerr, _, yerrs = split_axes(df)
-    yerr = yerrs[0]
+    x_axes, x_errs, _, y_errs = interpret_df(df, shape=(1, None))
+
+    x_axis = x_axes[0]
+    xerr = x_errs[0]
+    yerr = y_errs[0]
 
     # ylabel = set_if_none(ylabel, "Residuos")
 
     # If there is no uncertainty in X, don't plot it
     xerr = xerr if not xerr.isna().all() else None
+
+    if no_yerr:
+        yerr = None
 
     ax.axhline(
         y=0,
@@ -82,7 +93,8 @@ def residue(
         xerr=xerr,
         yerr=yerr,
         fmt='.',
-        # **kwargs
+        label=label,
+        **kwargs
     )
 
     return ax
@@ -95,16 +107,24 @@ def datafit(
     fmt=None,
     datalabel=None,
     fitlabel=None,
-    height_ratios=[3, 1]
+    reslabel=None,
+    fit_color=None,
+    data_color=None,
+    height_ratios=[3, 1],
+    no_yerr=False,
+    force_label=True,
 ):
     """Plot dataframe, fitted function and residue."""
 
-    x_axis, _, ys, _ = split_axes(df)
-    y_axis = ys[0]
+    passed_ax = ax is not None
+
+    x_axes, _, y_axes, _ = interpret_df(df, shape=(1, None))
+    x_axis = x_axes[0]
+    y_axis = y_axes[0]
 
     fig = None
 
-    if ax is None:
+    if not passed_ax:
         fig, ax = plt.subplots(
             2,
             1,
@@ -112,6 +132,11 @@ def datafit(
             height_ratios=height_ratios
         )
 
+    elif axis_bad_type(ax, n=2):
+        logger.error("Invalid axes argument.")
+        return None, None
+
+    if not passed_ax or force_label:
         ax[0].set(
             ylabel=y_axis.name
         )
@@ -120,31 +145,37 @@ def datafit(
             ylabel="Residuos"
         )
 
-    elif axes_bad_type(ax, n=2):
-        logger.error("Invalid axes argument.")
-        return None, None
-
     data(
         df,
         ax=ax[0],
         fmt=fmt,
-        label=set_if_none(datalabel, "Mediciones")
+        label=set_if_none(datalabel, "Mediciones"),
+        color=data_color,
+        no_yerr=no_yerr,
+        force_label=False
     )
 
     fitted(
         df,
         fit_func,
         ax=ax[0],
-        fmt=fmt,
-        label=fitlabel
+        label=fitlabel,
+        color=fit_color
     )
-
-    ax[0].legend()
 
     residue(
         df,
         fit_func,
         ax=ax[1],
+        label=reslabel,
+        color=data_color,
+        no_yerr=no_yerr
     )
+
+    if fig is not None:
+        ax[0].legend()
+
+        if reslabel is not None:
+            ax[1].legend()
 
     return fig, ax

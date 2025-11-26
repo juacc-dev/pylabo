@@ -2,8 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import logging
 
-from pylabo.lib.utils import split_axes, set_if_none
-from pylabo.plot.utils import axes_bad_type, axis_bad_type, fmt_choice
+from pylabo.lib.utils import interpret_df, set_if_none
+from pylabo.plot.utils import axis_bad_type, fmt_choice
 
 logger = logging.getLogger("pylabo.plot")
 
@@ -56,7 +56,8 @@ def _plot(
         # )
 
 
-def create_ax(
+def set_labels(
+    ax,
     rows, cols,
     x_axis,
     ys,
@@ -65,12 +66,6 @@ def create_ax(
     labels,
     stacked
 ):
-    fig, ax = plt.subplots(
-        rows,
-        cols,
-        sharex=stacked
-    )
-
     xlabel = set_if_none(xlabel, x_axis.name)
 
     if stacked:
@@ -92,8 +87,6 @@ def create_ax(
                 ylabel=ylabel
             )
 
-    return fig, ax
-
 
 def data(
     df: pd.DataFrame,
@@ -104,6 +97,9 @@ def data(
     ylabel=None,
     labels=None,  # For multiple dependent variables
     stacked=False,
+    shape=(1, None),
+    no_yerr=False,
+    force_label=True,
     **kwargs
 ):
     """Plot data from dataframe representing a function. The following
@@ -117,9 +113,14 @@ def data(
     Pass `stacked=True` to draw each column in a separate row.
     """
 
-    x_axis, xerr, ys, yerrs = split_axes(df)
+    passed_ax = ax is not None
 
-    if len(ys) == 1:
+    x_axes, x_errs, y_axes, y_errs = interpret_df(df, shape=shape)
+
+    x_axis = x_axes[0]
+    xerr = x_errs[0]
+
+    if len(y_axes) == 1:
         stacked = False
 
     # If there is no uncertainty in X, don't plot it
@@ -127,16 +128,24 @@ def data(
 
     fig = None
 
-    rows = len(ys) if stacked else 1
+    rows = len(y_axes) if stacked else 1
     cols = 1
 
     # ax may be passed. If not, create a new figure
-    if ax is None:
-        fig, ax = create_ax(
+    if not passed_ax:
+        fig, ax = plt.subplots(
+            rows,
+            cols,
+            sharex=stacked
+        )
+
+    if not passed_ax or force_label:
+        set_labels(
+            ax,
             rows,
             cols,
             x_axis,
-            ys,
+            y_axes,
             xlabel,
             ylabel,
             labels,
@@ -151,26 +160,31 @@ def data(
         stack_plot(
             ax,
             x_axis,
-            ys,
+            y_axes,
             xerr,
-            yerrs,
+            y_errs,
             fmt,
             **kwargs
         )
 
     else:
+        if label is not None and len(y_axes) == 1:
+            labels = [label]
+
         combine_plot(
             ax,
             x_axis,
-            ys,
+            y_axes,
             xerr,
-            yerrs,
+            y_errs,
             fmt,
             labels,
+            no_yerr,
             **kwargs
         )
 
-        plt.legend()
+        if fig is not None:
+            plt.legend()
 
     return fig, ax
 
@@ -178,11 +192,12 @@ def data(
 def combine_plot(
     ax,
     x_axis,
-    ys,
+    y_axes,
     xerr,
     yerrs,
     fmt,
     labels,
+    no_yerr,
     **kwargs
 ):
     # If passed, ax shuold have the right dimension
@@ -191,13 +206,13 @@ def combine_plot(
 
         return None, None
 
-    if len(ys) == 1:
-        labels = [None]
+    if len(y_axes) != 1:
+        labels = set_if_none(labels, [y.name for y in y_axes])
 
-    else:
-        labels = set_if_none(labels, [y.name for y in ys])
+    for y_axis, yerr, label in zip(y_axes, yerrs, labels):
+        if no_yerr:
+            yerr = None
 
-    for y_axis, yerr, label in zip(ys, yerrs, labels):
         _plot(
             ax,
             x_axis,
@@ -222,7 +237,7 @@ def stack_plot(
     **kwargs
 ):
     # If passed, ax shuold have the right dimension
-    if axes_bad_type(ax, n=len(y_axes)):
+    if axis_bad_type(ax, n=len(y_axes)):
         logger.error(
             f"Invalid axes argument. Expected list of {len(y_axes)} axes."
         )
