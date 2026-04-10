@@ -2,7 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import logging
 
-from pylabo.lib.utils import interpret_df, set_if_none
+from pylabo.proc.dataframe import interpret_df
+from pylabo.lib.utils import set_if_none
 from pylabo.plot.utils import axis_bad_type, fmt_choice
 
 logger = logging.getLogger("pylabo.plot")

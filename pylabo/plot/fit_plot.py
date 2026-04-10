@@ -4,7 +4,8 @@ import numpy as np
 import logging
 
 import pylabo.fit
-from pylabo.lib.utils import set_if_none, interpret_df
+from pylabo.proc.dataframe import interpret_df
+from pylabo.lib.utils import set_if_none
 from pylabo.plot.data_plot import data
 from pylabo.plot.utils import axis_bad_type
 

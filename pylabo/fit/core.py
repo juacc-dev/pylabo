@@ -7,7 +7,7 @@ import sys
 from pylabo.fit.function import Function, FittedFunction
 from pylabo.fit.tests import chi2_r, r2, p_value
 from pylabo.fit.funs import linear, linear_homog
-from pylabo.lib.utils import interpret_df
+from pylabo.proc.dataframe import interpret_df
 
 logger = logging.getLogger("pylabo.fit")
 

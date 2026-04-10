@@ -232,7 +232,7 @@ class Tektronix_TDS1002B(VisaInstrument):
 
         df = pd.DataFrame({
             "Tiempo [s]": x,
-            "Error X [s]": xerr,
+            "Error Tiempo [s]": xerr,
             "Canal 1 [V]": ch1,
             "Error 1 [V]": ch1_err,
             "Canal 2 [V]": ch2,
