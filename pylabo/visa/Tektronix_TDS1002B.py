@@ -1,4 +1,4 @@
-# import time
+import time
 import numpy as np
 import pandas as pd
 import logging
@@ -154,11 +154,9 @@ class Tektronix_TDS1002B(VisaInstrument):
             f"DATa:SOURce CH{ch};ENCdg {Tektronix_TDS1002B.DATA_ENCODING};WIDth {Tektronix_TDS1002B.DATA_WIDTH}"
         )
 
-        # TODO: Maybe wait now?
-
         # Get parameters for converting the raw curve data into voltage.
-        x0, dx, y0, vertical_units, vertical_offset = self.query_values(
-            "WFMPre:XZEro?;XINcr?;YZEro?;YMUlt?;YOFf?",
+        x0, dx, y0, vertical_units, vertical_offset, scale = self.query_values(
+            f"WFMPre:XZEro?;XINcr?;YZEro?;YMUlt?;YOFf?;:CH{ch}:SCAle?",
             ascii=True,  # The response is in plain text.
             separator=';'
         )
@@ -172,33 +170,37 @@ class Tektronix_TDS1002B(VisaInstrument):
         #   (in the manual it's 'YUNits per digitizer level').
 
         # Retrieve raw curve data, in bytes. The values range from 0 to 255.
+        t0 = time.time()
         raw_data = self.query_values(
             "CURVe?",
             datatype="B",  # bytes
             container=np.array,
+            ascii=False,
             is_big_endian=False  # Little endian
         )
+        ellapsed = time.time() - t0
 
         # TODO: maybe check if it's alright?
 
-        logger.info(f"Read {raw_data.size} points from oscilloscope.")
+        logger.info(f"Read {raw_data.size} points from oscilloscope in \
+                {ellapsed} seconds.")
 
         # Actual, meaningful curve data, in the corresponing units (like vols).
         y = y0 + (raw_data - vertical_offset) * vertical_units
 
         # Horizontal axis, in the correspoing units (like seconds).
-        x = np.arange(x0, x0 + Tektronix_TDS1002B.SCREEN_WIDTH, dx)
+        # 2500 points, separated by `dx`.
+        x = np.arange(x0, x0 + Tektronix_TDS1002B.SCREEN_WIDTH * dx, dx)
 
         # Size of a pixel in vertical units (minimum unit of measurement).
-        sensitivity = self.query(
-            f"CH{ch}:SCAle?") * Tektronix_TDS1002B.Y_DIVISIONS / Tektronix_TDS1002B.SCREEN_HEIGHT
+        sensitivity = scale * Tektronix_TDS1002B.Y_DIVISIONS / Tektronix_TDS1002B.SCREEN_HEIGHT
 
         # Uncertainty for each point, from the accuracy of the measurement
         # and the sensitivity of the Instrument.
         yerr = Tektronix_TDS1002B.Y_ACCURACY * (y - y0) + sensitivity
 
         # The horizontal uncertainty is always the same.
-        xerr = Tektronix_TDS1002B.X_ACCURACY
+        xerr = Tektronix_TDS1002B.X_ACCURACY * (x[-1] - x[0])
 
         df = pd.DataFrame({
             "Tiempo [s]": pd.Series(x),
