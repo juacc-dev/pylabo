@@ -13,7 +13,7 @@ import logging
 import re
 import time
 
-logger = logging.getLogger("visa")
+logger = logging.getLogger("pylabo.visa")
 
 # Possible backends are NI-VISA (default) and PyVISA-Py ("@py")
 DEFAULT_BACKEND = ""  # NI-VISA

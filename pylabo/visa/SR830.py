@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import bisect
 
-logger = logging.getLogger("visa")
+logger = logging.getLogger("pylabo.visa")
 
 
 def dict_invert(d: dict):

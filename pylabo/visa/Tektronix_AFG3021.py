@@ -2,7 +2,7 @@ from enum import Enum
 import logging
 from visa import VisaInstrument
 
-logger = logging.getLogger("visa")
+logger = logging.getLogger("pylabo.visa")
 
 
 class Tektronix_AFG3021B(VisaInstrument):

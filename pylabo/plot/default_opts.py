@@ -14,4 +14,4 @@ def setup_matplotlib():
     plt.rcParams["figure.figsize"] = (9, 7)
     plt.rcParams["legend.fontsize"] = 11
     plt.rcParams["legend.loc"] = "best"
-    plt.rcParams["legend.fontsize"] = 11  # 14
+    plt.rcParams["legend.fontsize"] = 14

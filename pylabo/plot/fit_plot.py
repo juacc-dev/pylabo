@@ -150,7 +150,7 @@ def datafit(
         df,
         ax=ax[0],
         fmt=fmt,
-        label=set_if_none(datalabel, "Mediciones"),
+        label=datalabel,
         color=data_color,
         no_yerr=no_yerr,
         force_label=False

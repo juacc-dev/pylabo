@@ -4,7 +4,7 @@ import pandas as pd
 import logging
 from visa import VisaInstrument
 
-logger = logging.getLogger("visa")
+logger = logging.getLogger("pylabo.visa")
 
 
 def tuplify(param) -> tuple:

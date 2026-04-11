@@ -92,11 +92,11 @@ def set_labels(
 def data(
     df: pd.DataFrame,
     ax=None,
-    label=None,
     fmt=None,
     xlabel=None,
     ylabel=None,
     labels=None,  # For multiple dependent variables
+    label=None,
     stacked=False,
     shape=(1, None),
     no_yerr=False,
@@ -169,8 +169,11 @@ def data(
         )
 
     else:
-        if label is not None and len(y_axes) == 1:
-            labels = [label]
+        if len(y_axes) == 1:
+            # `labels` is expected to be None if no labels were provided.
+            # When plotting single Y axis, if `label` was set, then it should
+            # be passed as `[label]`. If not set, nothing should be passed.
+            labels = None if label is None else [label]
 
         combine_plot(
             ax,
@@ -207,8 +210,7 @@ def combine_plot(
 
         return None, None
 
-    if len(y_axes) != 1:
-        labels = set_if_none(labels, [y.name for y in y_axes])
+    labels = set_if_none(labels, [y.name for y in y_axes])
 
     for y_axis, yerr, label in zip(y_axes, yerrs, labels):
         if no_yerr:

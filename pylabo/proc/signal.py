@@ -1,13 +1,16 @@
 import numpy as np
 import scipy.signal
-# import pandas as pd
+import pandas as pd
 import logging
+from pylabo.proc.dataframe import pair_or_df, unpack_df
 
 logger = logging.getLogger("pylabo.proc.signal")
 
-def fourier_transform(x, y, skip_first=0):
+def fft(x, y, *, skip_first=0):
+    x_first = x.iat[0] if isinstance(x, pd.Series) else x[0]
+    x_last = x.iat[-1] if isinstance(x, pd.Series) else x[-1]
 
-    sampling_freq = x.size / x.iat[-1]
+    sampling_freq = x.size / x_last
     cut = y.size // 2
 
     fft = np.fft.fft(y)
@@ -15,14 +18,51 @@ def fourier_transform(x, y, skip_first=0):
 
     cut = y.size // 2
 
-    xf = np.arange(0, sampling_freq, 1 / (x.iat[-1] - x.iat[0]))
+    xf = np.arange(0, sampling_freq, 1 / (x_last - x_first))
     yf = 2.0 / y.size * np.abs(yfft[:cut])
     xf = xf[:cut]
 
     return xf[skip_first:], yf[skip_first:]
 
 
-def find_highest_peaks(x, y, n, separation=0):
+def fourier_transform(
+    df: pd.DataFrame,
+    *,
+    skip_first=0
+) -> pd.DataFrame:
+    """
+    Fourier transform of a dataframe.
+    There should be only 4 columns in the dataframe
+    """
+
+    if len(df.columns) != 4:
+        logger.error("Invalid dataframe shape. Expected 4 columns")
+        return None
+
+    x, err_x, y, err_y = unpack_df(df)
+
+    xf, yf = fft(x, y, skip_first=skip_first)
+
+    fft_df = pd.DataFrame({
+        "Frecuencia": xf,
+        "Error Frecuencia": 0,
+        "Amplitud": yf,
+        "Error Amplitud": 0,
+    })
+
+    return fft_df
+
+
+def find_highest_peaks(
+    x_or_df,
+    y=None,  # Must be set if x is not a DataFrame
+    /,
+    *,
+    n=5,
+    separation=0,
+):
+    x, y = pair_or_df(x_or_df, y)
+
     distance = separation / (x[1] - x[0])
 
     peaks, properties = scipy.signal.find_peaks(

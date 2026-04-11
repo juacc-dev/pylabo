@@ -76,3 +76,30 @@ def interpret_df(
     yerr = [df[col] for col in cols[2 * N + 1:2 * (N + M):2]]
 
     return x, xerr, y, yerr
+
+
+def df_to_pair(df: pd.DataFrame):
+    """
+    Assume 1 independent variable and 1 dependent variable.
+    Return those two variables, without their error
+    """
+    xs, _, ys, _ = interpret_df(df, shape=(1, 1))
+
+    x = xs[0]
+    y = ys[0]
+
+    return x, y
+
+
+def pair_or_df(
+    x_or_df,
+    y
+):
+    if y is None:
+        df = x_or_df
+        x, y = df_to_pair(df)
+
+    else:
+        x = x_or_df
+
+    return x, y
