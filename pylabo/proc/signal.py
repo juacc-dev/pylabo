@@ -28,7 +28,8 @@ def fft(x, y, *, skip_first=0):
 def fourier_transform(
     df: pd.DataFrame,
     *,
-    skip_first=0
+    skip_first=0,
+    low_pass=None
 ) -> pd.DataFrame:
     """
     Fourier transform of a dataframe.
@@ -43,14 +44,25 @@ def fourier_transform(
 
     xf, yf = fft(x, y, skip_first=skip_first)
 
+    err_xf = 1 / (xf[1] - xf[0])
+
+    if low_pass:
+        xf, yf = low_pass_filter(xf, yf, low_pass)
+
     fft_df = pd.DataFrame({
         "Frecuencia": xf,
-        "Error Frecuencia": 0,
+        "Error Frecuencia": err_xf,
         "Amplitud": yf,
         "Error Amplitud": 0,
     })
 
     return fft_df
+
+
+def low_pass_filter(xf, yf, freq):
+    cut = np.where(xf < freq)
+
+    return xf[cut], yf[cut]
 
 
 def find_highest_peaks(
