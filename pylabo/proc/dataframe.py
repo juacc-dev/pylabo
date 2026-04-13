@@ -7,7 +7,7 @@ logger = logging.getLogger("pylabo.proc.dataframe")
 def strip_channel(
     df: pd.DataFrame,
     channel: int,
-):
+) -> pd.DataFrame:
     """
     Return a dataframe with only 4 columns corresponding to:
       1. X axis,
@@ -17,9 +17,25 @@ def strip_channel(
     """
 
     # 'Y error' is assumed to be next to 'Y'.
-    df_stripped = df[[0, 1, channel, channel + 1]]
+    ch_idx = 2 + (channel - 1) * 2
+    err_idx = ch_idx + 1
+
+    df_stripped = df[df.columns[[0, 1, ch_idx, err_idx]]]
 
     return df_stripped
+
+
+def decompose_df(
+    df: pd.DataFrame
+) -> list[pd.DataFrame]:
+
+    channels = int((len(df.columns) - 2) / 2)
+
+    dfs = []
+    for channel in range(1, channels + 1):
+        dfs.append(strip_channel(df, channel))
+
+    return dfs
 
 
 def unpack_df(
