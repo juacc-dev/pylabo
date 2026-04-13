@@ -1,4 +1,11 @@
-import pylabo.lib.logs
+import pylabo.logs
+import pylabo.plot
 import pylabo.args
 
-pylabo.args.parse()
+def defaults():
+    # Parse CLI arguments
+    pylabo.args.parse()
+
+    # Default config
+    pylabo.logs.config.setup()
+    pylabo.plot.config.setup()

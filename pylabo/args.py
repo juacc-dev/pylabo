@@ -1,7 +1,7 @@
 import sys
 import getopt
 import logging
-import pylabo.lib.logs as logs
+import pylabo.logs as logs
 
 logger = logging.getLogger("pylabo.args")
 
@@ -14,7 +14,7 @@ def parse() -> list[str]:
         logger.error(err)
         sys.exit(1)
 
-    logger.info("Parsing CLI options.")
+    logger.debug("Parsing CLI options.")
 
     for opt, arg in opts:
         match opt:
@@ -24,7 +24,12 @@ def parse() -> list[str]:
 
             # Verbose
             case "-v":
-                logs.opts.level_console = logging.DEBUG
+                if logs.opts.level_console == logging.INFO:
+                    # If passing '-vv'
+                    logs.opts.level_console = logging.DEBUG
+                else:
+                    # If only passing '-v'
+                    logs.opts.level_console = logging.INFO
 
             case "-q":
                 logs.opts.level_console = logging.ERROR

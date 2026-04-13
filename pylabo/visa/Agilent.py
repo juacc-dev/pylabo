@@ -4,7 +4,7 @@ from visa import VisaInstrument
 import numpy as np
 from datetime import datetime
 
-logger = logging.getLogger("pylabo.visa")
+logger = logging.getLogger("visa")
 
 
 class Agilent_34970A(VisaInstrument):

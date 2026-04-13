@@ -1,4 +1,4 @@
-from pylabo.plot.default_opts import opts
+from pylabo.plot.config import opts
 from matplotlib.axes import Axes
 
 
