@@ -25,7 +25,7 @@ def strip_channel(
     return df_stripped
 
 
-def decompose_df(
+def decompose(
     df: pd.DataFrame
 ) -> list[pd.DataFrame]:
 
@@ -38,7 +38,7 @@ def decompose_df(
     return dfs
 
 
-def unpack_df(
+def unpack(
     df: pd.DataFrame
 ):
     """
@@ -52,7 +52,7 @@ def unpack_df(
     return data
 
 
-def interpret_df(
+def interpret(
     df: pd.DataFrame,
     shape: tuple = (1, None)  # (independent vars, dependent vars)
 ):
@@ -99,7 +99,7 @@ def df_to_pair(df: pd.DataFrame):
     Assume 1 independent variable and 1 dependent variable.
     Return those two variables, without their error
     """
-    xs, _, ys, _ = interpret_df(df, shape=(1, 1))
+    xs, _, ys, _ = interpret(df, shape=(1, 1))
 
     x = xs[0]
     y = ys[0]

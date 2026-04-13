@@ -7,7 +7,7 @@ import sys
 from pylabo.fit.function import Function, FittedFunction
 from pylabo.fit.tests import chi2_r, r2, p_value
 from pylabo.fit.funs import linear, linear_homog
-from pylabo.proc.dataframe import interpret_df
+from pylabo.proc.dataframe import interpret
 
 logger = logging.getLogger("pylabo.fit")
 
@@ -57,7 +57,7 @@ def fit(
     Returns an object containing all information about the result.
     """
 
-    x_data, _, y_data, yerr = interpret_df(df)
+    x_data, _, y_data, yerr = interpret(df)
 
     # The dataframe should contain X and Y axes, each with their uncertainty
     if len(y_data) != 1:

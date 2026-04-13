@@ -4,7 +4,7 @@ import numpy as np
 import logging
 
 import pylabo.fit
-from pylabo.proc.dataframe import interpret_df
+from pylabo.proc.dataframe import interpret
 from pylabo.lib.utils import set_if_none
 from pylabo.plot.data_plot import data
 from pylabo.plot.utils import axis_bad_type
@@ -22,7 +22,7 @@ def fitted(
     """
     Plot the fitted function. More points are used as to draw a smooth curve.
     """
-    x_axes, _, _, _ = interpret_df(df, shape=(1, None))
+    x_axes, _, _, _ = interpret(df, shape=(1, None))
 
     x_axis = x_axes[0]
 
@@ -68,7 +68,7 @@ def residue(
 ):
     """Plot the residue from a fit."""
 
-    x_axes, x_errs, _, y_errs = interpret_df(df, shape=(1, None))
+    x_axes, x_errs, _, y_errs = interpret(df, shape=(1, None))
 
     x_axis = x_axes[0]
     xerr = x_errs[0]
@@ -119,7 +119,7 @@ def datafit(
 
     passed_ax = ax is not None
 
-    x_axes, _, y_axes, _ = interpret_df(df, shape=(1, None))
+    x_axes, _, y_axes, _ = interpret(df, shape=(1, None))
     x_axis = x_axes[0]
     y_axis = y_axes[0]
 

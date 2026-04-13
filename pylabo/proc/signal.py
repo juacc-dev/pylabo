@@ -2,7 +2,7 @@ import numpy as np
 import scipy.signal
 import pandas as pd
 import logging
-from pylabo.proc.dataframe import pair_or_df, unpack_df
+from pylabo.proc.dataframe import pair_or_df, unpack
 
 logger = logging.getLogger("pylabo.proc.signal")
 
@@ -40,7 +40,7 @@ def fourier_transform(
         logger.error("Invalid dataframe shape. Expected 4 columns")
         return None
 
-    x, err_x, y, err_y = unpack_df(df)
+    x, err_x, y, err_y = unpack(df)
 
     xf, yf = fft(x, y, skip_first=skip_first)
 

@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import logging
 
-from pylabo.proc.dataframe import interpret_df
+from pylabo.proc.dataframe import interpret
 from pylabo.lib.utils import set_if_none
 from pylabo.plot.utils import axis_bad_type, fmt_choice
 
@@ -116,7 +116,7 @@ def data(
 
     passed_ax = ax is not None
 
-    x_axes, x_errs, y_axes, y_errs = interpret_df(df, shape=shape)
+    x_axes, x_errs, y_axes, y_errs = interpret(df, shape=shape)
 
     x_axis = x_axes[0]
     xerr = x_errs[0]
