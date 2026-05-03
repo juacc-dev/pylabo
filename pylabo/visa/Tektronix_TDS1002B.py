@@ -2,7 +2,7 @@ import time
 import numpy as np
 import pandas as pd
 import logging
-from visa import VisaInstrument
+from pylabo.visa import VisaInstrument
 
 logger = logging.getLogger("pylabo.visa")
 
@@ -42,8 +42,7 @@ class Tektronix_TDS1002B(VisaInstrument):
         self.write(f"RS232:BAUd {Tektronix_TDS1002B.BAUD_RATE}")
         self._instrument.baud_rate = Tektronix_TDS1002B.BAUD_RATE
 
-        self.write(f"RS232:TRANsmit:TERMinator {
-                   Tektronix_TDS1002B.LINE_TERMINATOR_STR}")
+        self.write(f"RS232:TRANsmit:TERMinator {Tektronix_TDS1002B.LINE_TERMINATOR_STR}")
         self._instrument.read_terminator = Tektronix_TDS1002B.LINE_TERMINATOR_CODE
         self._instrument.write_terminator = Tektronix_TDS1002B.LINE_TERMINATOR_CODE
 
@@ -77,7 +76,7 @@ class Tektronix_TDS1002B(VisaInstrument):
             self.write(f"CH{ch}:SCAle {scale:.1E}")
 
         if y0 is not None:
-            scale = self.query(f"CH{ch}:SCAle?")
+            scale = float(self.query(f"CH{ch}:SCAle?"))
             pos = y0 / scale
 
             # The position shuold be in divisions (of the screen)
@@ -89,7 +88,7 @@ class Tektronix_TDS1002B(VisaInstrument):
             self.write(f"HORizontal:SCAle {scale:.1E}")
 
         if x0 is not None:
-            scale = self.query("HORizontal:SCAle?")
+            scale = float(self.query("HORizontal:SCAle?"))
             pos = x0 / scale
 
             self.write(f"HORizontal:POSition {pos:.1E}")

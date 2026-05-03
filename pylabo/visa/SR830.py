@@ -1,6 +1,9 @@
+# Lock in amplifier
+# Usado en labo 4
+
 from enum import Enum
 import logging
-from visa import VisaInstrument
+from pylabo.visa import VisaInstrument
 import numpy as np
 import pandas as pd
 import bisect
