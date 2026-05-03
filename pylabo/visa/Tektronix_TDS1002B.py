@@ -149,6 +149,7 @@ class Tektronix_TDS1002B(VisaInstrument):
         # screen, usually volts.
         # Horizontal units are the units of the X axis, usually seconds.
 
+        t0 = time.time()
         # Set data source, the binary encoding and the byte width of a point.
         self.write(
             f"DATa:SOURce CH{ch};ENCdg {Tektronix_TDS1002B.DATA_ENCODING};WIDth {Tektronix_TDS1002B.DATA_WIDTH}"
@@ -170,7 +171,7 @@ class Tektronix_TDS1002B(VisaInstrument):
         #   (in the manual it's 'YUNits per digitizer level').
 
         # Retrieve raw curve data, in bytes. The values range from 0 to 255.
-        t0 = time.time()
+        t1 = time.time()
         raw_data = self.query_values(
             "CURVe?",
             datatype="B",  # bytes
@@ -178,12 +179,15 @@ class Tektronix_TDS1002B(VisaInstrument):
             ascii=False,
             is_big_endian=False  # Little endian
         )
-        ellapsed = time.time() - t0
+
+        t = time.time()
+        read_time = (t - t1) * 1000
+        total_time = (t - t0) * 1000
 
         # TODO: maybe check if it's alright?
 
-        logger.info(f"Read {raw_data.size} points from oscilloscope in \
-                {ellapsed} seconds.")
+        logger.debug(
+            f"Read {raw_data.size} points from oscilloscope in {read_time:.0f} ms (total {total_time:.0f} ms).")
 
         # Actual, meaningful curve data, in the corresponing units (like vols).
         y = y0 + (raw_data - vertical_offset) * vertical_units

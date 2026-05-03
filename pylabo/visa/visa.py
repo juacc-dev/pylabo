@@ -20,33 +20,18 @@ DEFAULT_BACKEND = ""  # NI-VISA
 STARTUP_SLEEP = 0.5
 
 
-def print_usb() -> None:
+def print_devs() -> None:
     rm = pyvisa.ResourceManager()
 
     ids = rm.list_resources()
 
     for id in ids:
-        if re.match(r"USB::.*::INSTR", id):
-            dev = rm.open_resource(id)
-
-            print(f"{id}  -->  {dev.query("*IDN?")}")
-
-
-# def channel_list(ch: int) -> list[int]:
-#     ch_list = [1, 2]
-
-#     match ch:
-#         case 0:
-#             pass
-#         case 1:
-#             ch_list = [1]
-#         case 2:
-#             ch_list = [2]
-#         case _:
-#             logger.error(f"Invalid channel: {ch}")
-#             return None
-
-#     return ch_list
+        if not re.match(r"ASRL.*", id):
+            try:
+                dev = rm.open_resource(id)
+                print(f"{id}  -->  {dev.query('*IDN?')}")
+            except Exception:
+                continue
 
 
 class VisaInstrument:
@@ -54,7 +39,7 @@ class VisaInstrument:
         self,
         address,
         *,
-        backend: str = DEFAULT_BACKEND,
+        backend: str = None,
         **kwargs
     ) -> None:
 

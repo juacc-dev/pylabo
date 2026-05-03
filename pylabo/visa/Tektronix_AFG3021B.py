@@ -1,6 +1,6 @@
 from enum import Enum
 import logging
-from visa import VisaInstrument
+from pylabo.visa import VisaInstrument
 
 logger = logging.getLogger("pylabo.visa")
 
@@ -46,6 +46,7 @@ class Tektronix_AFG3021B(VisaInstrument):
         self,
         ch=1,
         voltage=None,
+        volt_range=None,
         freq=None,
         shape: Funs | str = None,
         impedance=None
@@ -54,6 +55,10 @@ class Tektronix_AFG3021B(VisaInstrument):
 
         if voltage is not None:
             self.write(f"SOURce{ch}:VOLTage {voltage}")
+
+        if volt_range is not None:
+            low, high = volt_range
+            self.write(f"SOURce{ch}:VOLTage:LIMit:LOW {low};HIGH {high}")
 
         if freq is not None:
             self.write(f"SOURce{ch}:FREQuency {freq}")
