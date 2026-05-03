@@ -12,6 +12,7 @@ todo, la mayoría de los datos crudos y resultados se pueden guardar como csv.
 Hay módulos para
 - hacer plots (`pylabo.plot`)
 - hacer ajustes (`pylabo.fit`)
+
 que intentan abstraen el boilerplate de matplotlib y scipy y que permiten
 trabajar con dataframes fácilmente. También hay un pequeño módulo olvidado para interactuar con Google Sheets. Lo usé únicamente en labo 2, cuando todavía hacíamos mediciones a mano, para crear archivos csv de manera más automática.
 
