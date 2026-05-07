@@ -34,10 +34,9 @@ class Tektronix_TDS1002B(VisaInstrument):
     def __init__(
         self,
         address,
-        backend: str = None,
         **kwargs
     ):
-        super().__init__(address, backend=backend, **kwargs)
+        super().__init__(address, **kwargs)
 
         self.write(f"RS232:BAUd {Tektronix_TDS1002B.BAUD_RATE}")
         self._instrument.baud_rate = Tektronix_TDS1002B.BAUD_RATE

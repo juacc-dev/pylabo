@@ -10,47 +10,52 @@
 
 import pyvisa
 import logging
-import re
 import time
+from pylabo.visa import opts
 
 logger = logging.getLogger("pylabo.visa")
 
-# Possible backends are NI-VISA (default) and PyVISA-Py ("@py")
-DEFAULT_BACKEND = ""  # NI-VISA
-STARTUP_SLEEP = 0.5
-
-
-def print_devs() -> None:
+def print_devs(
+    check=True,
+    query="(GPIB|USB)?*::INSTR",  # Match only GPIB and USB devices
+) -> None:
     rm = pyvisa.ResourceManager()
 
-    ids = rm.list_resources()
+    # `query` uses 'VISA Resource Regular Expression'. Maybe check here:
+    # https://www.ni.com/docs/en-US/bundle/ni-visa/page/finding-visa-resources-using-regular-expressi.html
+    ids = rm.list_resources(query=query)
+
+    print("Connected devices:")
 
     for id in ids:
-        if not re.match(r"ASRL.*", id):
-            try:
-                dev = rm.open_resource(id)
-                print(f"{id}  -->  {dev.query('*IDN?')}")
-            except Exception:
-                continue
+        if not check:
+            print(id)
+            continue
+
+        try:
+            dev = rm.open_resource(id)
+            name = dev.query('*IDN?').rstrip("\n")
+
+        except Exception:
+            name = ""
+
+        print(f"{id}  -->  {name}")
 
 
 class VisaInstrument:
     def __init__(
         self,
         address,
-        *,
-        backend: str = None,
         **kwargs
     ) -> None:
-
-        self._instrument = pyvisa.ResourceManager(backend).open_resource(
+        self._instrument = pyvisa.ResourceManager(opts.backend).open_resource(
             resource_name=address,
             # read_termination='\n',
             # write_termination='\n',
             **kwargs
         )
 
-        time.sleep(STARTUP_SLEEP)
+        time.sleep(opts.startup_sleep)
         self.check()
 
     def __del__(self):

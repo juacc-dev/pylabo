@@ -3,7 +3,7 @@
 
 # from enum import Enum
 import logging
-from visa import VisaInstrument
+from pylabo.visa import VisaInstrument
 import numpy as np
 from datetime import datetime
 
@@ -18,10 +18,9 @@ class Agilent_34970A(VisaInstrument):
     def __init__(
         self,
         address,
-        backend: str = None,
         **kwargs
     ):
-        super().__init__(address, backend=backend, **kwargs)
+        super().__init__(address, **kwargs)
 
         self.write("FORMAT:READING:CHANNEL ON")
         self.write("FORMAT:READING:TIME ON")

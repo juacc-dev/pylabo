@@ -26,10 +26,9 @@ class Tektronix_AFG3021B(VisaInstrument):
     def __init__(
         self,
         address,
-        backend: str = None,
         **kwargs
     ):
-        super().__init__(address, backend=backend, **kwargs)
+        super().__init__(address, **kwargs)
 
     def output(
         self,
@@ -47,6 +46,7 @@ class Tektronix_AFG3021B(VisaInstrument):
         ch=1,
         voltage=None,
         volt_range=None,
+        offset=None,
         freq=None,
         shape: Funs | str = None,
         impedance=None
@@ -62,6 +62,9 @@ class Tektronix_AFG3021B(VisaInstrument):
 
         if freq is not None:
             self.write(f"SOURce{ch}:FREQuency {freq}")
+
+        if offset is not None:
+            self.write(f"SOURce{ch}:VOLTage:OFFSet {offset}")
 
         if shape is not None:
             shape = shape.value if type(shape) is Tektronix_AFG3021B.Funs else shape

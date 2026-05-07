@@ -44,10 +44,9 @@ class SR830(VisaInstrument):
     def __init__(
         self,
         address,
-        backend: str = None,
         **kwargs
     ):
-        super().__init__(address, backend=backend, **kwargs)
+        super().__init__(address, **kwargs)
 
     # Data
     # Precalculated dictionaries and their inverses
