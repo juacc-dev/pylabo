@@ -11,7 +11,7 @@
 import pyvisa
 import logging
 import time
-from pylabo.visa import opts
+from pylabo.visa.config import opts
 
 logger = logging.getLogger("pylabo.visa")
 
